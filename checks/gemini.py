@@ -7,6 +7,7 @@ from utils.operator import click_element
 from helpers.image import find
 from credentials import prompt
 import json
+import worker
 import pyperclip
 
 
@@ -80,7 +81,7 @@ def copy_image():
     copy_ss = "images/bsi/copy_image.png"
 
     while True:
-        position = (211, 306)
+        position = (190, 423)
 
         pilot.moveTo(position, duration=0.5)
         pilot.rightClick()
@@ -132,6 +133,23 @@ def paste_image():
 def write_prompt():
     print("Writing prompt")
     time.sleep(0.5)
+    pilot.hotkey("ctrl","1")
+    click_element("images/gemini/reverse.png",confidence=0.8)
+    time.sleep(1)
+    pilot.hotkey("enter")
+    reverse_json=pyperclip.paste()
+    prompt=f"""You are a OCR machine understand handwritings and herbarium sheet, compare the json information with the attached image and fix the existing field values, you should:
+     1. Remove all the field values which are not present in the image but are present in the json.  
+     2. Remove all the field values which are not clearly understandable due to complex handwriting in the image.
+     3. Fix known common spellings of place names if it is clearly visible and identified confidently else remove the field value, but do not assume and fill any field vules if it is not present in the image. 
+     4. Make all the handwritten fields true, if the field value is available and is handwritten.
+     5. Only put/keep collector name if it present in the image and is clearly vislble and understandable. Do not consider the name as collector name if the word "Herb." is a prefix, collector name will mostly have prefix : "Leg.","Com.","Coll.". 
+     6. For collection date, only fill the value of date, month and year if it is clearly visible. 
+     7. Only keep the country field value if the country name is available in the image, or if it is possible to predict from the state name.
+     8. Only keep the state name value if it is present and clearly understandable in the image.
+     9. Only keep the locality value if it is present and clearly understandable in the image.
+     Do not predict or assume any field value. Do not consider and strike through texts. here is the json:```{reverse_json}```. Do not make any web search or borrow any information from anywhere, just fix the json strictly following the image. Return the response in same json format with all the attributes.
+"""
     pyperclip.copy(prompt)
     time.sleep(0.5)
     prompt_ss = "images/gemini/prompt_input.png"
@@ -150,23 +168,6 @@ def handle_response():
     if successful:
         print("Received Response")
         copied_text=pyperclip.paste()
-        # Check if family is available
-        
-        gemini_output=json.loads(copied_text)
-        gemini_output["family"]=str(gemini_output.get("family",""))
-        if gemini_output.get("family","")=="No Family" or gemini_output.get("family","")=="" or gemini_output.get("family","").lower()=="unknown" or gemini_output.get("family","").lower()=="null":
-            print("Need to find the family")
-            load_and_click("images/gemini/ipni_ext.png",duration=1)
-            load_and_scroll_click("images/gemini/ipni_input.png",duration=1)
-            pilot.click()
-            pilot.hotkey("ctrl","v")
-            time.sleep(1)
-            load_and_click("images/gemini/ipni_submit.png",duration=1)
-            pilot.click()
-            pilot.click()
-            got_response = load_and_scroll_click("images/chatgpt/ok.png", duration=20)
-            if got_response:
-                return True
         return True
     else:
         return False

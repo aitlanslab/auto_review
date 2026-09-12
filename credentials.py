@@ -27,7 +27,7 @@ extracted data in json. The example JSON format :
 "altitude":"150 m",
 "latitude":"N 24° 53' 15.20\"",
 "longitude":"E 91° 52' 10.50\""}```.
-Extract the information from the attached herbarium image and return the output 
+Read the information from the attached herbarium image and return the output 
 json following the expected format. Do not put any family value, if it is not available. For complete, clear confident collection date, `is_full_date_available` 
 should be true else false, for blank collection date keep the field value false. 
 Do not take any informations from the barcode, eg.Botanical Survey of India, 

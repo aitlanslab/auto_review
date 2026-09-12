@@ -2,7 +2,7 @@ import pyautogui as pilot
 import time
 from credentials import prompt
 from utils.executor import load_and_click, is_element_present
-
+import worker
 def handle_extension():
     # Switch to annotation tab
     pilot.hotkey("ctrl","1")
@@ -12,9 +12,27 @@ def handle_extension():
     time.sleep(0.2)
     pilot.hotkey("ctrl","v")
     time.sleep(0.2)
-    input_field=load_and_click("images/bsi/extension_fill.png",confidence=0.8)
-    time.sleep(2)
-    input_field=load_and_click("images/bsi/extension_save.png",confidence=0.8)
+    load_and_click("images/bsi/extension_fill.png",confidence=0.8)
+    time.sleep(1)
+    #worker.controller.pause()
+    print("Checking alert")
+
+    #input_field=load_and_click("images/bsi/extension_save.png",confidence=0.8)
+    if is_element_present("images/brave/alert_ok.png"):
+        print("Found Alert Ok")
+        if is_element_present("images/brave/reject.png"):
+            print("Rejected")
+            pilot.hotkey("enter")
+            #worker.controller.pause()
+            return True
+        else:
+            print("Need to resolve")
+            worker.controller.pause()
+            return False
+            #pilot.hotkey("enter")
+        
+    return False
+    """
     time.sleep(0.2)
     if is_element_present("images/bsi/success.png"):
         pilot.hotkey("enter")
@@ -37,8 +55,9 @@ def handle_extension():
         pilot.click()
         return True
     return False
-
+    """
 
 
 def submit_response():
+    print("Submit Response")
     return handle_extension()

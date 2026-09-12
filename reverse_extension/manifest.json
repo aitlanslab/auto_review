@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "BSI Annotation Extractor",
+  "version": "1.0",
+  "description": "Extract annotation form data and convert to JSON",
+  "permissions": [
+    "activeTab",
+    "clipboardWrite",
+    "scripting"
+  ],
+  "action": {
+    "default_title": "Extract Annotation Data"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "http://68.178.172.222/*",
+    "https://68.178.172.222/*"
+  ]
+}

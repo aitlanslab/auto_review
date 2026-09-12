@@ -14,7 +14,7 @@ from start import auto_start
 pilot.moveTo(921,22,duration=0.5)
 pilot.click()
 annotation_count=0
-for i in range(500):
+for i in range(1):
     # Check and fix
     annotation_ok=execute(load_annotation)
     chatgpt_ok=execute(load_chatgpt)

@@ -4,7 +4,9 @@ from utils.executor import execute, is_element_present, load_and_click
 from utils.operator import click_element
 
 def copy_image():
-    position=211,306
+    print("Copy image")
+    position=190,423
+    print(position)
     pilot.moveTo(position,duration=0.5)
     pilot.rightClick()
     copy_ss="images/bsi/copy_image.png"

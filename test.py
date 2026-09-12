@@ -11,7 +11,7 @@ from start import auto_start
 pilot.moveTo(921,22,duration=0.5)
 pilot.click()
 
-for i in range(1):
+while(True):
     print("Gemini working")
     time.sleep(1)
     load_temp_chat()
@@ -25,8 +25,7 @@ for i in range(1):
     start_time = time.time()
     response_handled = handle_response()
     elapsed_time = time.time() - start_time
-    
-    """
+
     # Check if response was handled and within time limit
     if response_handled and elapsed_time <= 60:
         submit_response()
@@ -40,4 +39,4 @@ for i in range(1):
         pilot.hotkey("ctrl","r")
         time.sleep(5)
         continue 
-    """
+    
