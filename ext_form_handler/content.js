@@ -41,6 +41,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   setTimeout(() => {
     const data = message.payload;
     status=""
+    setValue("current_name","");
     if(checkIfConfirmed(data)){
       // Confirmed
       status="Confirm"
@@ -48,11 +49,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }else if(checkIfTaxonomist(data)){
       // Send to taxonomist
       status="Send to Taxonimist"
-      data["flag_family"]=true
-      data["flag_genus"]=true
-      data["flag_species"]=true
-      data["flag_scientific_name"]=true
-      data["flag_author_name"]=true
+      originalFamilyName=getFamilyValue()
+      if(originalFamilyName.toLowerCase()!="no family" && originalFamilyName.toLowerCase()!=""){
+        data["flag_family"]=false
+        data["family"]=originalFamilyName
+      }else{
+        data["flag_family"]=true
+      }
+      
+      data["flag_genus"]=data["genus_handwritten"]
+      data["flag_species"]=data["species_handwritten"]
+      data["flag_scientific_name"]=data["scientific_handwritten"]
+      data["flag_author_name"]=data["author_name_handwritten"]
       if(data["locality_handwritten"]==true){
         data["flag_locality"]=true
       }
@@ -95,6 +103,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       //console.log(id,value)
       if(id=="country_name"){
         country_code=false
+        if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
+          value="USA"
+        }
         countryToId(value).then(id=>{
           country_code=id
           if(country_code!=false){
@@ -131,7 +142,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         submitBtn.click();
       }, 300);
     }else{
-      alert(status)
+      if(status=="Send to Taxonimist"){
+        const taxonomistBtn = document.getElementById("flagToTaxonomistBtn");
+        if(!taxonomistBtn){
+          alert("Button does not exists");
+          return;
+        }
+        taxonomistBtn.click();
+      }else{
+        alert(status)
+      }
+      
     }
   }, 300); 
 
@@ -198,6 +219,10 @@ function isValueMissing(val){
           }, 300);
 
 */
+function getFamilyValue() {
+  return document.querySelector("#family").value;
+}
+
 function setFamilyValue(value) {
   const select = document.getElementById('family');
   const option = document.createElement('option');
