@@ -133,23 +133,25 @@ def paste_image():
 def write_prompt():
     print("Writing prompt")
     time.sleep(0.5)
+    """
     pilot.hotkey("ctrl","1")
     click_element("images/gemini/reverse.png",confidence=0.8)
     time.sleep(1)
     pilot.hotkey("enter")
-    reverse_json=pyperclip.paste()
-    prompt=f"""You are a OCR machine understand handwritings and herbarium sheet, compare the json information with the attached image and fix the existing field values, you should:
-     1. Remove all the field values which are not present in the image but are present in the json.  
-     2. Remove all the field values which are not clearly understandable due to complex handwriting in the image.
-     3. Fix known common spellings of place names if it is clearly visible and identified confidently else remove the field value, but do not assume and fill any field vules if it is not present in the image. 
-     4. Make all the handwritten fields true, if the field value is available and is handwritten.
-     5. Only put/keep collector name if it present in the image and is clearly vislble and understandable. Do not consider the name as collector name if the word "Herb." is a prefix, collector name will mostly have prefix : "Leg.","Com.","Coll.". 
-     6. For collection date, only fill the value of date, month and year if it is clearly visible. 
-     7. Only keep the country field value if the country name is available in the image, or if it is possible to predict from the state name.
-     8. Only keep the state name value if it is present and clearly understandable in the image.
-     9. Only keep the locality value if it is present and clearly understandable in the image.
-     Do not predict or assume any field value. Do not consider and strike through texts. here is the json:```{reverse_json}```. Do not make any web search or borrow any information from anywhere, just fix the json strictly following the image. Return the response in same json format with all the attributes.
-"""
+    #reverse_json=pyperclip.paste()
+    """
+    prompt='''You are a taxonomist who can understand herbarium sheet image, extract the values present in it and response in json format.
+    Analyse the attached herbarium sheet image and fill the json : ```json{"scientific_name":"","scientific_name_confidence_score":0.0,"collector_name":"","collector_name_confidence_score":0.0,"locality":"","locality_confidence_score":0.0,"state":"","state_confidence_score":0.0,"country_name":"","country_name_confidence_score":0.0}```. 
+    Constraints:
+    1. Only fill the if it is present in the image, else leave it blank. Collector name mostly has prefix "Leg.","Com.","Coll." and not "Herb.".
+    2. Only fill the locality if it is present in the sheet.
+    3. Put state and country if it is available in the sheet, else predict it from the locality value if locality value is present, else leave the field blank.
+    4. Mostly district or state can be found from label with prefix "Flora of XXX" if it is present.
+    5. Do not consider text - "Botanical Survey of India", it is generic sticker present.
+    6. Confidence score is a value <1, indicating the confidence of extracted/predicted values, some texts are handwritten hard to determine.
+    6. Do not consider any strike-through texts. No web search.
+    Your response should only contain the copiable json in code format without any descriptions.
+    '''
     pyperclip.copy(prompt)
     time.sleep(0.5)
     prompt_ss = "images/gemini/prompt_input.png"

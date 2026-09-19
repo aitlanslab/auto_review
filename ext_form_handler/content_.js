@@ -34,35 +34,44 @@ async function countryToId(countryName) {
   return false;
 }
 
-THREASHOLD_VALUE=0.9
-AUTOSUBMIT=false
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  setTimeout(() => { setValue("country_id", "105") }, 300)
   // Delay to ensure DOM + Select2 are ready
   setTimeout(() => {
     const data = message.payload;
     status=""
     setValue("current_name","");
+    originalFamilyName=getFamilyValue()
+    if(originalFamilyName.toLowerCase()!="no family" && originalFamilyName.toLowerCase()!=""){
+      data["flag_family"]=false
+      data["family"]=originalFamilyName
+      data["flag_family"]=true
+    }else{
+      data["flag_family"]=true
+    }
+
     if(checkIfConfirmed(data)){
       // Confirmed
       status="Confirm"
+
     }else if(checkIfTaxonomist(data)){
       // Send to taxonomist
       status="Send to Taxonimist"      
-      if(data["country_name_confidence_score"]<THREASHOLD_VALUE){
-        data["flag_country"]=true
-      }
-      if(data["state_confidence_score"]<THREASHOLD_VALUE){
-        data["flag_state"]=true
-      }
-      if(data["locality_confidence_score"]<THREASHOLD_VALUE){
+      data["flag_genus"]=data["genus_handwritten"]
+      data["flag_species"]=data["species_handwritten"]
+      data["flag_scientific_name"]=data["scientific_handwritten"]
+      data["flag_author_name"]=data["author_name_handwritten"]
+      if(data["locality_handwritten"]==true){
         data["flag_locality"]=true
       }
-      if(data["collector_name_confidence_score"]<THREASHOLD_VALUE){
-        data["flag_collector_name"]=true
-        data["collector_name"]=getValue("collector_name")
+      if(data["collection_number_handwritten"]==true){
+        data["flag_collection_number"]=true
       }
-    
+      if(data["collector_name_handwritten"]==true){
+        data["flag_collector_name"]=true
+      }
+
     }else if(checkIfRejected(data)){
       // Reject
       status="Reject"
@@ -76,6 +85,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       data["species"]="No Species"
       data["scientific_name"]=""
       data["author_name"]=""
+      if(data["locality_handwritten"]==true){
+        data["flag_locality"]=true
+      }
+      if(data["collection_number_handwritten"]==true){
+        data["flag_collection_number"]=true
+      }
+      if(data["collector_name_handwritten"]==true){
+        data["flag_collector_name"]=true
+      }
 
     }else{
       status="Hard to decide"
@@ -84,17 +102,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     Object.entries(data).forEach(([id, value]) => {
       //console.log(id,value)
-
-      if(id=="scientific_name"){
-         existing_scientific_name=getValue("scientific_name")
-         if(value!=existing_scientific_name || data["scientific_name_confidence_score"]<THREASHOLD_VALUE){
-            value=existing_scientific_name
-            setValue("flag_family",true)
-            setValue("flag_scientific_name",true)
-            status="Send to Taxonimist"
-         }
-      }
-
       if(id=="country_name"){
         country_code=false
         if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
@@ -127,22 +134,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           }
         }) 
       }
-
+      if(id=="genus" && getValue("genus")!=value){
+        value=getValue("genus")
+        setValue("flag_genus",true)
+      }
+      if(id=="species" && getValue("species")!=value){
+        value=getValue("species")
+        setValue("flag_species",true)
+      }
+      if(id=="scientific_name" && getValue("scientific_name")!=value){
+        value=getValue("scientific_name")
+        setValue("flag_scientific_name",true)
+      }
+      if(id=="current_name"){
+        value=""
+      }
       if(id=="author_name" && getValue("author_name")!=value){
         value=getValue("author_name")
         setValue("flag_author_name",true)
       }
-      if(id=="collector_name" && data["collector_name_confidence_score"]<THREASHOLD_VALUE){
-        status="Send to Taxonimist"
-      }
-      if(id=="locality" && data["locality_confidence_score"]<THREASHOLD_VALUE){
-        status="Send to Taxonimist"
-      }
-      if(id=="state" && data["state_confidence_score"]<THREASHOLD_VALUE){
-        status="Send to Taxonimist"
-      }
-      if(id=="country_name" && data["country_name_confidence_score"]<THREASHOLD_VALUE){
-        status="Send to Taxonimist"
+      if(id=="collector_name" && getValue("collector_name")!=value){
+        value=getValue("collector_name")
+        setValue("flag_collector_name",true)
       }
 
       // Setting values
@@ -165,12 +178,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }, 300);
     }else{
       if(status=="Send to Taxonimist"){
-        const taxonomistBtn = document.getElementById("flagToTaxonomistBtn");
+        /*const taxonomistBtn = document.getElementById("flagToTaxonomistBtn");
         if(!taxonomistBtn){
           alert("Button does not exists");
           return;
         }
-        taxonomistBtn.click();
+        taxonomistBtn.click();*/
+        alert(status)
       }else{
         alert(status)
       }
@@ -183,9 +197,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function checkIfTaxonomist(data){
   if(
-     !isValueMissing(getValue("genus")) &&
-     !isValueMissing(getValue("species")) &&
-     !isValueMissing(getValue("scientific_name"))
+     !isValueMissing(data["genus"]) &&
+     !isValueMissing(data["species"]) &&
+     !isValueMissing(data["scientific_name"])
     ){
       return true
     }
@@ -195,10 +209,10 @@ function checkIfTaxonomist(data){
 
 function checkIfRejected(data){
   if(
-     isValueMissing(getValue("genus")) &&
-     isValueMissing(getValue("species")) &&
-     isValueMissing(getValue("scientific_name")) &&
-     isValueMissing(getValue("author_name"))
+     isValueMissing(data["genus"]) &&
+     isValueMissing(data["species"]) &&
+     isValueMissing(data["scientific_name"]) &&
+     isValueMissing(data["author_name"])
     ){
       return true
     }
@@ -206,15 +220,13 @@ function checkIfRejected(data){
 }
 
 function checkIfConfirmed(data){
-  if( !isValueMissing(getValue("genus")) &&
-     !isValueMissing(getValue("species")) &&
-     !isValueMissing(getValue("scientific_name")) &&
-      !isValueMissing(getValue("author_name"))
+  if(!isValueMissing(data["family"]) && 
+     !isValueMissing(data["genus"]) &&
+     !isValueMissing(data["species"]) &&
+     !isValueMissing(data["scientific_name"]) &&
+     !isValueMissing(data["author_name"])
     ){
-      if(data["collector_name_confidence_score"]>=THREASHOLD_VALUE && data["locality_confidence_score"]>=THREASHOLD_VALUE && data["state_confidence_score"]>=THREASHOLD_VALUE && data["country_name_confidence_score"]>=THREASHOLD_VALUE){
-        return true
-      }
-      return false
+      return true
     }
   return false
 }
