@@ -81,8 +81,15 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
             authorCitation: authors.join(" ex ")
         };
         json["family"] = getField("Family as entered in IPNI")
-        //json["scientific_name"]=scientificName
-        json["ipni_verified"]=false
+        if(json["family"]==null || json["family"]=="null"){
+            json["family"]="No Family"
+            json["flag_family"]=true
+        }
+        json["scientific_name"]=scientificName
+        json["ipni_verified"]=true
+        if(authors.length!=0){
+            json["author_name"]=authors[0]
+        }
         if(json["family"]==null){
             json["family"]="null"
         }

@@ -55,9 +55,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     let isFillingRequired=true
     const data = message.payload;
 
-    
+    status="You decide"
     const isIpniVerified=data.ipni_verified || false
-    status=""
     fam=getFamilyValue()
     setValue("current_name","");
     if(checkIfRejected()){
@@ -73,10 +72,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       data["scientific_name"]=""
       data["author_name"]=""
       isFillingRequired=false;
-    }else if(checkIfConfirmed(data,isIpniVerified)){
+    } 
+    if(checkIfConfirmed(data,isIpniVerified)){
       // Confirmed
       status="Confirm"
-    }else if(checkIfTaxonomist(data)){
+    }
+    if(!checkIfRejected() && checkIfTaxonomist(data,isIpniVerified)){
       // Send to taxonomist
       status="Send to Taxonimist"      
       setValue("flag_family",true)
@@ -95,24 +96,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         data["collector_name"]=getValue("collector_name")
       }
     
-    }else if(checkIfRejected()){
-      // Reject
-      status="Reject"
-      data["flag_family"]=true
-      data["flag_genus"]=true
-      data["flag_species"]=true
-      data["flag_scientific_name"]=true
-      data["flag_author_name"]=true
-      data["family"]="No Family"
-      data["genus"]="No Genus"
-      data["species"]="No Species"
-      data["scientific_name"]=""
-      data["author_name"]=""
-      isFillingRequired=false;
-
-    }else{
-      status="Hard to decide"
     }
+
       Object.entries(data).forEach(([id, value]) => {
         //console.log(id,value)
         if(id=="scientific_name"){
@@ -162,8 +147,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         if(id=="author_name" && getValue("author_name")!=value){
           if(!isIpniVerified){
-            value=getValue("author_name")
-            setValue("flag_author_name",true)
+            if(getValue("author_name").length!=0){
+              value=getValue("author_name")
+            }
+            //setValue("flag_author_name",true)
           }
         }
         if(id=="collector_name" && data["collector_name_confidence_score"]<THREASHOLD_VALUE){
@@ -199,28 +186,46 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         
       });
     
+    if(!AUTOSUBMIT){
+      //alert(status)
+    }  
+    
     if(status=="Reject"){
-      setTimeout(() => {
-        const submitBtn = document.getElementById("flagToBsiBtn");
-        if (!submitBtn) {
-          alert("Button does not exists")
-          return;
-        }
-        submitBtn.click();
-      }, 300);
-    }else{
-      if(status=="Send to Taxonimist"){
-        if(AUTOSUBMIT){
-          const taxonomistBtn = document.getElementById("flagToTaxonomistBtn");
-          if(!taxonomistBtn){
-            alert("Button does not exists");
+      if(AUTOSUBMIT){
+        setTimeout(() => {
+          const submitBtn = document.getElementById("flagToBsiBtn");
+          if (!submitBtn) {
+            alert("Button does not exists")
             return;
           }
-          taxonomistBtn.click();
-        }
-      }else{
-        alert(status)
+          submitBtn.click();
+        }, 300);
       }
+    } else if(status=="Confirm"){
+      if(AUTOSUBMIT){
+        setTimeout(() => {
+          const submitBtn = document.getElementById("acceptBtn");
+          if (!submitBtn) {
+            alert("Button does not exists")
+            return;
+          }
+          submitBtn.click();
+        }, 300);
+      }
+    } else if(status=="Send to Taxonimist"){
+        alert(status)
+        if(AUTOSUBMIT){
+          /*setTimeout(() => {
+            const submitBtn = document.getElementById("flagToTaxonomistBtn");
+            if (!submitBtn) {
+              alert("Button does not exists")
+              return;
+            }
+            submitBtn.click();
+          }, 300);*/
+        }
+    } else {
+      alert(status)
     }
   }, 300); 
 
@@ -228,14 +233,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 
-function checkIfTaxonomist(){
-  if(
-     !isValueMissing(getValue("genus")) &&
-     !isValueMissing(getValue("species")) &&
-     !isValueMissing(getValue("scientific_name")) 
+function checkIfTaxonomist(data,isIpniVerified=false){
+  if(isIpniVerified){
+    if(
+     isValueMissing(data["genus"]) ||
+     isValueMissing(data["species"]) ||
+     isValueMissing(data["scientific_name"]) ||
+     isValueMissing(data["family"]) ||
+     isValueMissing(data["author_name"]) 
     ){
       return true
+    }else{
+      return false
     }
+  }
+  // 1. Check any of the mandatory fields are missing
+  if(
+     isValueMissing(getValue("genus")) ||
+     isValueMissing(getValue("species")) ||
+     isValueMissing(getValue("scientific_name")) ||
+     isValueMissing(getFamilyValue()) ||
+     isValueMissing(getValue("author_name")) 
+    ){
+      if(isValueMissing(getValue("author_name"))){
+        alert("Author name is missing - Check IPNI")
+      }
+      return true
+    }
+  // 2. Check if there exists any difference between present value and rectified value
+  if(data["scientific_name"]!=getValue("scientific_name") && !isIpniVerified){
+    alert("Scientific Name not matching - Check IPNI")
+    return true
+  }
   return false
 }
 
@@ -257,14 +286,7 @@ function checkIfConfirmed(data,ipni_verified=false){
      !isValueMissing(getValue("scientific_name")) &&
       !isValueMissing(getValue("author_name"))
     ){
-      if(ipni_verified){
-        return true
-      }else if(data["collector_name_confidence_score"]>=THREASHOLD_VALUE && data["locality_confidence_score"]>=THREASHOLD_VALUE && data["state_confidence_score"]>=THREASHOLD_VALUE && data["country_name_confidence_score"]>=THREASHOLD_VALUE){
-        return true
-      }else{
-        return false
-      }
-      
+      return true      
     }
   return false
 }
@@ -272,7 +294,7 @@ function checkIfConfirmed(data,ipni_verified=false){
 
 
 function isValueMissing(val){
-  val=val.toLowerCase()
+  val=val.toLowerCase() || ""
   if(val=="" || val=="no family" || val=="no genus" || val=="sp." || val=="no species" || val=="sp"){
     return true;
   }
