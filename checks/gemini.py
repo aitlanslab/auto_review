@@ -140,6 +140,8 @@ def write_prompt():
     pilot.hotkey("enter")
     #reverse_json=pyperclip.paste()
     """
+    import random
+    statements=["No web search. Your response should have copiable json.","Do not do web search. Respond in json format","Your response should be in copiable json format","Response in copiable json without any web search."]
     prompt='''You are a taxonomist who can understand herbarium sheet image, extract the values present in it and response in json format.
     Analyse the attached herbarium sheet image and fill the json : ```json{"scientific_name":"","scientific_name_confidence_score":0.0,"collector_name":"","collector_name_confidence_score":0.0,"locality":"","locality_confidence_score":0.0,"state":"","state_confidence_score":0.0,"country_name":"","country_name_confidence_score":0.0}```. 
     Constraints:
@@ -149,9 +151,7 @@ def write_prompt():
     - Mostly district or state can be found from label with prefix "Flora of XXX" if it is present.
     - Do not consider text - "Botanical Survey of India", it is generic sticker present.
     - Confidence score is a value <1, indicating the confidence of extracted/predicted values, some texts are handwritten hard to determine.
-    Do not consider any strike-through texts. No web search.
-    Your response should only contain the copiable json in code format without any descriptions.
-    '''
+    '''+random.choice(statements)
     pyperclip.copy(prompt)
     time.sleep(0.5)
     prompt_ss = "images/gemini/prompt_input.png"
