@@ -34,22 +34,53 @@ async function countryToId(countryName) {
   return false;
 }
 
-THREASHOLD_VALUE=0.9
-AUTOSUBMIT=false
+function isStringSame(str1,str2){
+  str1=str1.replaceAll(".","").replaceAll("(","").replaceAll(")","").replaceAll(" ","")
+  str2=str2.replaceAll(".","").replaceAll("(","").replaceAll(")","").replaceAll(" ","")
+  if(str1.toLowerCase()==str2.toLowerCase()){
+    return true;
+  }
+  return false;
+}
+
+THREASHOLD_VALUE=0
+AUTOSUBMIT=true
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Delay to ensure DOM + Select2 are ready
+
   setTimeout(() => {
+    setValue("flag_family",false)
+    setValue("flag_scientific_name",false)
     let isFillingRequired=true
     const data = message.payload;
+
+    
+    const isIpniVerified=data.ipni_verified || false
     status=""
+    fam=getFamilyValue()
     setValue("current_name","");
-    if(checkIfConfirmed(data)){
+    if(checkIfRejected()){
+      status="Reject"
+      data["flag_family"]=true
+      data["flag_genus"]=true
+      data["flag_species"]=true
+      data["flag_scientific_name"]=true
+      data["flag_author_name"]=true
+      data["family"]="No Family"
+      data["genus"]="No Genus"
+      data["species"]="No Species"
+      data["scientific_name"]=""
+      data["author_name"]=""
+      isFillingRequired=false;
+    }else if(checkIfConfirmed(data,isIpniVerified)){
       // Confirmed
       status="Confirm"
     }else if(checkIfTaxonomist(data)){
       // Send to taxonomist
       status="Send to Taxonimist"      
+      setValue("flag_family",true)
+      setValue("flag_scientific_name",true)
       if(data["country_name_confidence_score"]<THREASHOLD_VALUE){
         data["flag_country"]=true
       }
@@ -82,13 +113,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }else{
       status="Hard to decide"
     }
-    
-
       Object.entries(data).forEach(([id, value]) => {
         //console.log(id,value)
         if(id=="scientific_name"){
           existing_scientific_name=getValue("scientific_name")
-          if(value!=existing_scientific_name || data["scientific_name_confidence_score"]<THREASHOLD_VALUE){
+          if(!isIpniVerified && (!isStringSame(value,existing_scientific_name) || data["scientific_name_confidence_score"]<THREASHOLD_VALUE)){
               value=existing_scientific_name
               setValue("flag_family",true)
               setValue("flag_scientific_name",true)
@@ -96,6 +125,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 status="Send to Taxonimist"
           }
         }
+
 
         if(id=="country_name"){
           country_code=false
@@ -131,24 +161,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
 
         if(id=="author_name" && getValue("author_name")!=value){
-          value=getValue("author_name")
-          setValue("flag_author_name",true)
+          if(!isIpniVerified){
+            value=getValue("author_name")
+            setValue("flag_author_name",true)
+          }
         }
         if(id=="collector_name" && data["collector_name_confidence_score"]<THREASHOLD_VALUE){
-          if(isFillingRequired)
+          if(isFillingRequired && !isIpniVerified){
+            alert("collector name problem")
             status="Send to Taxonimist"
+          }
         }
         if(id=="locality" && data["locality_confidence_score"]<THREASHOLD_VALUE){
-          if(isFillingRequired)
+          if(isFillingRequired && !isIpniVerified){
+            alert("locality problem")
             status="Send to Taxonimist"
+          }
         }
         if(id=="state" && data["state_confidence_score"]<THREASHOLD_VALUE){
-          if(isFillingRequired)
+          if(isFillingRequired && !isIpniVerified)
+            alert("state problem")
             status="Send to Taxonimist"
         }
         if(id=="country_name" && data["country_name_confidence_score"]<THREASHOLD_VALUE){
-          if(isFillingRequired)
+          if(isFillingRequired && !isIpniVerified){
+            alert("country name problem")
             status="Send to Taxonimist"
+          }
         }
 
         // Setting values
@@ -171,12 +210,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }, 300);
     }else{
       if(status=="Send to Taxonimist"){
-        const taxonomistBtn = document.getElementById("flagToTaxonomistBtn");
-        if(!taxonomistBtn){
-          alert("Button does not exists");
-          return;
+        if(AUTOSUBMIT){
+          const taxonomistBtn = document.getElementById("flagToTaxonomistBtn");
+          if(!taxonomistBtn){
+            alert("Button does not exists");
+            return;
+          }
+          taxonomistBtn.click();
         }
-        taxonomistBtn.click();
       }else{
         alert(status)
       }
@@ -191,7 +232,7 @@ function checkIfTaxonomist(){
   if(
      !isValueMissing(getValue("genus")) &&
      !isValueMissing(getValue("species")) &&
-     !isValueMissing(getValue("scientific_name"))
+     !isValueMissing(getValue("scientific_name")) 
     ){
       return true
     }
@@ -210,16 +251,20 @@ function checkIfRejected(){
   return false
 }
 
-function checkIfConfirmed(data){
+function checkIfConfirmed(data,ipni_verified=false){
   if( !isValueMissing(getValue("genus")) &&
      !isValueMissing(getValue("species")) &&
      !isValueMissing(getValue("scientific_name")) &&
       !isValueMissing(getValue("author_name"))
     ){
-      if(data["collector_name_confidence_score"]>=THREASHOLD_VALUE && data["locality_confidence_score"]>=THREASHOLD_VALUE && data["state_confidence_score"]>=THREASHOLD_VALUE && data["country_name_confidence_score"]>=THREASHOLD_VALUE){
+      if(ipni_verified){
         return true
+      }else if(data["collector_name_confidence_score"]>=THREASHOLD_VALUE && data["locality_confidence_score"]>=THREASHOLD_VALUE && data["state_confidence_score"]>=THREASHOLD_VALUE && data["country_name_confidence_score"]>=THREASHOLD_VALUE){
+        return true
+      }else{
+        return false
       }
-      return false
+      
     }
   return false
 }
@@ -253,7 +298,11 @@ function getValue(id){
 }
 
 function getFamilyValue() {
-  return document.querySelector("#family").value;
+  return document.querySelector('#select2-family-container').textContent
+  //setTimeout(()=>{
+    return document.querySelector("#family").value;
+  //},300)
+  
 }
 
 function getCountryId(){

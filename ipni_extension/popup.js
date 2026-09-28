@@ -54,7 +54,7 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
 
         // Parse HTML
         const doc = new DOMParser().parseFromString(html, "text/html");
-
+        const scientificName = doc.querySelector("h2").innerText;
         // Helper function
         const getField = (label) => {
             const dt = [...doc.querySelectorAll("dt")]
@@ -81,6 +81,8 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
             authorCitation: authors.join(" ex ")
         };
         json["family"] = getField("Family as entered in IPNI")
+        //json["scientific_name"]=scientificName
+        json["ipni_verified"]=false
         if(json["family"]==null){
             json["family"]="null"
         }

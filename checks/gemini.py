@@ -149,7 +149,7 @@ def write_prompt():
     4. Mostly district or state can be found from label with prefix "Flora of XXX" if it is present.
     5. Do not consider text - "Botanical Survey of India", it is generic sticker present.
     6. Confidence score is a value <1, indicating the confidence of extracted/predicted values, some texts are handwritten hard to determine.
-    6. Do not consider any strike-through texts. No web search.
+    7. Do not consider any strike-through texts. No web search.
     Your response should only contain the copiable json in code format without any descriptions.
     '''
     pyperclip.copy(prompt)
