@@ -147,7 +147,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       if(data["multiple_authors"]==true){
         data["flag_author_name"]=true
-        data["author_name"]="" 
+        //data["author_name"]="" 
         if(status!="Reject"){
           status="Send to Taxonimist"
         }

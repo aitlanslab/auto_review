@@ -81,12 +81,12 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
             json["family"]="No Family"
             json["flag_family"]=true
         }
-        json["scientific_name"]=scientificName
+        //json["scientific_name"]=scientificName
         json["ipni_verified"]=true
-        if(authors.length!=0){
+        /*if(authors.length!=0){
             json["author_name"]=authors[0]
-        }
-        json["multiple_authors"]=authors.length>1?true:false
+        }*/
+        json["multiple_authors"]=false
         if(json["family"]==null){
             json["family"]="null"
         }
