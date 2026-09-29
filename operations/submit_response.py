@@ -2,21 +2,73 @@ import pyautogui as pilot
 import time
 from credentials import prompt
 from utils.executor import load_and_click, is_element_present
+from utils.operator import click_element
 import worker
 def handle_extension():
     # Switch to annotation tab
+    
     pilot.hotkey("ctrl","1")
-    open_ex=load_and_click("images/bsi/extension.png",confidence=0.8)
     time.sleep(0.2)
-    input_field=load_and_click("images/bsi/extension_input.png",confidence=0.8)
-    time.sleep(0.2)
+    click_element("images/bsi/extension.png",confidence=0.8)
+    time.sleep(0.5)
+    click_element("images/bsi/extension_input.png",confidence=0.8)
+    time.sleep(0.5)
     pilot.hotkey("ctrl","v")
+    time.sleep(0.5)
+    click_element("images/bsi/extension_fill.png",confidence=0.8)
     time.sleep(0.2)
-    load_and_click("images/bsi/extension_fill.png",confidence=0.8)
-    time.sleep(1)
+    click_element("images/bsi/extension_save.png",confidence=0.8)
     #worker.controller.pause()
     print("Checking alert")
-
+    
+    # Check if IPNI verification required
+    if is_element_present("images/bsi/validate.png"):
+        pilot.press("enter")
+        load_and_click("images/bsi/b_ex.png")
+        time.sleep(0.5)
+        if(is_element_present("images/bsi/b_ex_out.png")):
+            pilot.press("enter")
+            time.sleep(0.5)
+            load_and_click("images/bsi/i_ex.png")
+            time.sleep(0.5)
+            load_and_click("images/bsi/i_ex_input.png")
+            pilot.hotkey('ctrl', 'v')
+            time.sleep(0.5)
+            load_and_click("images/bsi/i_ex_btn.png")
+            load_and_click("images/bsi/i_ex_out.png")
+            pilot.press("enter")
+            time.sleep(0.5)
+            load_and_click("images/bsi/extension.png",confidence=0.8)
+            time.sleep(0.5)
+            load_and_click("images/bsi/extension_input.png",confidence=0.8)
+            time.sleep(0.5)
+            pilot.hotkey("ctrl","v")
+            time.sleep(0.5)
+            load_and_click("images/bsi/extension_fill.png",confidence=0.8)
+            load_and_click("images/bsi/extension_save.png",confidence=0.8)
+            time.sleep(0.5)
+            if(is_element_present("images/bsi/completed.png")):
+                print("- Completed")
+                pilot.press("enter")
+                time.sleep(0.5)
+            if(is_element_present("images/bsi/flag.png")):
+                print("- Flag")
+                pilot.press("enter")
+                time.sleep(0.5)
+            if(is_element_present("images/bsi/reject.png")):
+                print("- Reject")
+                pilot.press("enter")
+                time.sleep(0.5)
+            return True
+    elif is_element_present("images/bsi/reject.png"):
+        print("- Reject")
+        pilot.press("enter")
+        time.sleep(0.5)
+    else:
+        time.sleep(1)
+        return True
+    
+    """
     #input_field=load_and_click("images/bsi/extension_save.png",confidence=0.8)
     if is_element_present("images/brave/alert_ok.png"):
         print("Found Alert Ok")
@@ -32,7 +84,7 @@ def handle_extension():
             #pilot.hotkey("enter")
         
     return False
-    """
+    
     time.sleep(0.2)
     if is_element_present("images/bsi/success.png"):
         pilot.hotkey("enter")

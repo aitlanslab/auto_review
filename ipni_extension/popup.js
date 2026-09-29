@@ -2,17 +2,13 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
 
     const loading = document.getElementById("loading");
     const button = document.getElementById("scrapeBtn");
-
+    const input_json = document.getElementById("keyword").value.trim();
+    json = JSON.parse(input_json)
     try {
-
         // Show loading
         loading.style.display = "block";
         button.disabled = true;
         button.textContent = "Scraping...";
-
-        const input_json = document.getElementById("keyword").value.trim();
-        json = JSON.parse(input_json)
-
         // First try: genus + species
         let keyword = `${json.genus} ${json.species}`;
 
@@ -90,9 +86,11 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
         if(authors.length!=0){
             json["author_name"]=authors[0]
         }
+        json["multiple_authors"]=authors.length>1?true:false
         if(json["family"]==null){
             json["family"]="null"
         }
+        json["scrapping_success"]=true
         navigator.clipboard.writeText(JSON.stringify(json, null, 2))
             .then(() => {
                 console.log("JSON copied to clipboard");
@@ -103,9 +101,15 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
         alert(JSON.stringify(json, null, 2));
 
     } catch (err) {
-
-        console.error(err);
-        alert("Error: " + err.message);
+        json["scrapping_success"]=false
+        json["ipni_verified"]=true
+        json["multiple_authors"]=false
+        navigator.clipboard.writeText(JSON.stringify(json, null, 2))
+            .then(() => {
+                console.log("JSON copied to clipboard");
+            })
+            .catch(err => console.error("Failed to copy:", err));
+        alert(JSON.stringify(json, null, 2));
 
     } finally {
 
