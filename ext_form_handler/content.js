@@ -54,7 +54,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     setValue("flag_scientific_name",false)
     let isFillingRequired=true
     const data = message.payload;
-    const isIpniVerified=data.ipni_verified || false
+    let isIpniVerified=false
+    if(data.ipni_verified!=undefined || data.ipni_verified!=null){
+      isIpniVerified=data.ipni_verified || false
+    }
     status="Validate with IPNI"
     if(isIpniVerified){
       status="Confirm"
@@ -70,6 +73,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       data["flag_author_name"]=true
       data["family"]="No Family"
       data["genus"]="No Genus"
+
       Object.entries(data).forEach(([id, value]) => {
         setValue(id,value)
       })
@@ -120,8 +124,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if(isIpniVerified && isFillingRequired){
-      fields_already_filled=["country_name","country_id","state_id","collector_name","locality"]
-
+      fields_already_filled=["country_name","country_id","state_id","collector_name","locality","lat_deg","lat_min","lat_sec","lon_deg","lon_min","lon_sec","latitude","longitude"]
+      if(data["scientific_name"].includes("sp.")){
+        data["species"]=""
+      }
       if(data["family"]=="No Family"){
           status="Reject"
           data["flag_family"]=true

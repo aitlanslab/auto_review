@@ -34,7 +34,10 @@ function checkParagraph() {
     const observer = new MutationObserver((mutations) => {
       // Get ALL code containers
       const codeContainers = document.querySelectorAll(".code-container");
-
+      const icon= document.querySelector("gb_Md")
+      if(icon!=undefined || icon!=null){
+        icon.style.display="none"
+      }
       // Check each code container for JSON
       codeContainers.forEach((container) => {
         // Try to find the actual code element inside

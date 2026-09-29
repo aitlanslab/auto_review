@@ -22,11 +22,11 @@ def handle_extension():
     print("Checking alert")
     
     # Check if IPNI verification required
-    if is_element_present("images/bsi/validate.png"):
+    if is_element_present("images/bsi/validate.png",duration=2):
         pilot.press("enter")
         load_and_click("images/bsi/b_ex.png")
         time.sleep(0.5)
-        if(is_element_present("images/bsi/b_ex_out.png")):
+        if(is_element_present("images/bsi/b_ex_out.png",duration=2)):
             pilot.press("enter")
             time.sleep(0.5)
             load_and_click("images/bsi/i_ex.png")
@@ -47,26 +47,30 @@ def handle_extension():
             load_and_click("images/bsi/extension_fill.png",confidence=0.8)
             load_and_click("images/bsi/extension_save.png",confidence=0.8)
             time.sleep(0.5)
-            if(is_element_present("images/bsi/completed.png")):
+            if(is_element_present("images/bsi/completed.png",duration=2)):
                 print("- Completed")
                 pilot.press("enter")
                 time.sleep(0.5)
-            if(is_element_present("images/bsi/flag.png")):
-                print("- Flag")
-                pilot.press("enter")
-                time.sleep(0.5)
-            if(is_element_present("images/bsi/reject.png")):
+                return True
+            if(is_element_present("images/bsi/reject.png",duration=2)):
                 print("- Reject")
                 pilot.press("enter")
                 time.sleep(0.5)
-            return True
-    elif is_element_present("images/bsi/reject.png"):
+                return True
+            if(is_element_present("images/bsi/flag.png",duration=2)):
+                print("- Flag")
+                pilot.press("enter")
+                time.sleep(0.5)
+                return True
+            return False
+    if is_element_present("images/bsi/reject.png",duration=2):
         print("- Reject")
         pilot.press("enter")
         time.sleep(0.5)
-    else:
-        time.sleep(1)
         return True
+    
+    time.sleep(1)
+    return True
     
     """
     #input_field=load_and_click("images/bsi/extension_save.png",confidence=0.8)
