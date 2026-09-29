@@ -34,7 +34,7 @@ function checkParagraph() {
     const observer = new MutationObserver((mutations) => {
       // Get ALL code containers
       const codeContainers = document.querySelectorAll(".code-container");
-      const icon= document.querySelector("gb_Md")
+      const icon= document.querySelector(".gb_Md")
       if(icon!=undefined || icon!=null){
         icon.style.display="none"
       }
