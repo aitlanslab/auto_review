@@ -34,7 +34,15 @@ document.getElementById("scrapeBtn").addEventListener("click", async () => {
 
         // Still no result
         if (!searchJson.results || !searchJson.results.length) {
-            alert("No results found");
+            json["scrapping_success"]=false
+            json["ipni_verified"]=true
+            json["multiple_authors"]=false
+            navigator.clipboard.writeText(JSON.stringify(json, null, 2))
+                .then(() => {
+                    console.log("JSON copied to clipboard");
+                })
+                .catch(err => console.error("Failed to copy:", err));
+            alert(JSON.stringify(json, null, 2));
             return;
         }
 
