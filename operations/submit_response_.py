@@ -20,67 +20,55 @@ def handle_extension():
     click_element("images/bsi/extension_save.png",confidence=0.8)
     #worker.controller.pause()
     print("Checking alert")
-    # Check if got response
-    if is_element_present("images/bsi/success.png",duration=1):
-        print("- Success")
+    
+    # Check if IPNI verification required
+    if is_element_present("images/bsi/validate.png",duration=2):
+        pilot.press("enter")
+        load_and_click("images/bsi/b_ex.png")
+        time.sleep(0.5)
+        if(is_element_present("images/bsi/b_ex_out.png",duration=2)):
+            pilot.press("enter")
+            time.sleep(0.5)
+            load_and_click("images/bsi/i_ex.png")
+            time.sleep(0.5)
+            load_and_click("images/bsi/i_ex_input.png")
+            pilot.hotkey('ctrl', 'v')
+            time.sleep(0.5)
+            load_and_click("images/bsi/i_ex_btn.png")
+            load_and_click("images/bsi/i_ex_out.png")
+            pilot.press("enter")
+            time.sleep(0.5)
+            load_and_click("images/bsi/extension.png",confidence=0.8)
+            time.sleep(0.5)
+            load_and_click("images/bsi/extension_input.png",confidence=0.8)
+            time.sleep(0.5)
+            pilot.hotkey("ctrl","v")
+            time.sleep(0.5)
+            load_and_click("images/bsi/extension_fill.png",confidence=0.8)
+            load_and_click("images/bsi/extension_save.png",confidence=0.8)
+            time.sleep(0.5)
+            if(is_element_present("images/bsi/completed.png",duration=2)):
+                print("- Completed")
+                pilot.press("enter")
+                time.sleep(0.5)
+                return True
+            if(is_element_present("images/bsi/reject.png",duration=2)):
+                print("- Reject")
+                pilot.press("enter")
+                time.sleep(0.5)
+                return True
+            if(is_element_present("images/bsi/flag.png",duration=2)):
+                print("- Flag")
+                pilot.press("enter")
+                time.sleep(0.5)
+                return True
+            return False
+    if is_element_present("images/bsi/reject.png",duration=2):
+        print("- Reject")
         pilot.press("enter")
         time.sleep(0.5)
         return True
-    if is_element_present("images/bsi/ok.png",duration=2):
-    # Check if IPNI verification required
-        if is_element_present("images/bsi/validate.png"):
-            pilot.press("enter")
-            load_and_click("images/bsi/b_ex.png")
-            time.sleep(0.5)
-            if(is_element_present("images/bsi/b_ex_out.png",duration=2)):
-                pilot.press("enter")
-                time.sleep(0.5)
-                load_and_click("images/bsi/i_ex.png")
-                time.sleep(0.5)
-                load_and_click("images/bsi/i_ex_input.png")
-                pilot.hotkey('ctrl', 'v')
-                time.sleep(0.5)
-                load_and_click("images/bsi/i_ex_btn.png")
-                load_and_click("images/bsi/i_ex_out.png")
-                pilot.press("enter")
-                time.sleep(0.5)
-                load_and_click("images/bsi/extension.png",confidence=0.8)
-                time.sleep(0.5)
-                load_and_click("images/bsi/extension_input.png",confidence=0.8)
-                time.sleep(0.5)
-                pilot.hotkey("ctrl","v")
-                time.sleep(0.5)
-                load_and_click("images/bsi/extension_fill.png",confidence=0.8)
-                load_and_click("images/bsi/extension_save.png",confidence=0.8)
-                time.sleep(0.5)
-                if(is_element_present("images/bsi/completed.png",duration=2)):
-                    print("- Completed")
-                    pilot.press("enter")
-                    time.sleep(0.5)
-                    return True
-                if(is_element_present("images/bsi/reject.png",duration=2)):
-                    print("- Reject")
-                    pilot.press("enter")
-                    time.sleep(0.5)
-                    return True
-                if(is_element_present("images/bsi/flag.png",duration=2)):
-                    print("- Flag")
-                    pilot.press("enter")
-                    time.sleep(0.5)
-                    return True
-                return False
-        if is_element_present("images/bsi/reject.png"):
-            print("- Reject")
-            pilot.press("enter")
-            time.sleep(0.5)
-            return True
-        if is_element_present("images/bsi/flag.png"):
-            print("- Flag")
-            pilot.press("enter")
-            time.sleep(0.5)
-            return True
-            
-        return False
+    
     time.sleep(1)
     return True
     

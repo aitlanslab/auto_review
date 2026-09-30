@@ -43,7 +43,7 @@ function isStringSame(str1,str2){
   return false;
 }
 
-THREASHOLD_VALUE=0
+THREASHOLD_VALUE=0.90
 AUTOSUBMIT=true
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -55,16 +55,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     let isFillingRequired=true
     const data = message.payload;
     let isIpniVerified=false
-    if(data.ipni_verified!=undefined || data.ipni_verified!=null){
-      isIpniVerified=data.ipni_verified || false
-    }
+    isIpniVerified = data?.ipni_verified ?? false;
     status="Validate with IPNI"
     if(isIpniVerified){
       status="Confirm"
     }
     fam=getFamilyValue()
     setValue("current_name","");
-    if(checkIfRejected()){
+    if(checkIfRejected(data)){
       status="Reject"
       data["flag_family"]=true
       data["flag_genus"]=true
@@ -75,18 +73,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       data["genus"]="No Genus"
 
       Object.entries(data).forEach(([id, value]) => {
-        setValue(id,value)
-      })
-      isFillingRequired=false;
-    } 
-
-    if(!isIpniVerified && isFillingRequired){
-
-      Object.entries(data).forEach(([id, value]) => {
-        // Non IPNI Fillings
-        if(id=="scientific_name"){
-          value=getValue("scientific_name")
-        }
         if(id=="country_name"){
           country_code=false
           if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
@@ -99,12 +85,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           countryToId(value).then(id=>{
             country_code=id
             if(country_code!=false){
-              setTimeout(() => { setValue("country_id", country_code) }, 300)
+              setTimeout(() => { setValue("country_id", country_code) }, 500)
               if(country_code=="265"){
                 setValue("flag_country",true);
               }
             }else{
-              setTimeout(() => { setValue("country_id", "265") }, 300)
+              setTimeout(() => { setValue("country_id", "265") }, 500)
               setValue("flag_country",true);
             }
           })
@@ -118,6 +104,100 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               setTimeout(() => { setValue("state_id", state_code) }, 1500)
             }
           }) 
+        }
+        setValue(id,value)
+      })
+      isFillingRequired=false;
+    } 
+    if(checkIfTaxonimoist(data) && isFillingRequired){
+      status="Send to Taxonimist"
+      data["flag_species"]=true
+      data["flag_scientific_name"]=true
+      data["flag_author_name"]=true
+      Object.entries(data).forEach(([id, value]) => {
+        if(id=="country_name"){
+          country_code=false
+          if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
+            value="USA"
+          }
+          existing_country_id=getCountryId()
+          if(existing_country_id=="115" && value.toLowerCase()!="india"){
+            value="unknown"
+          }
+          countryToId(value).then(id=>{
+            country_code=id
+            if(country_code!=false){
+              setTimeout(() => { setValue("country_id", country_code) }, 500)
+              if(country_code=="265"){
+                setValue("flag_country",true);
+              }
+            }else{
+              setTimeout(() => { setValue("country_id", "265") }, 500)
+              setValue("flag_country",true);
+            }
+          })
+
+        }
+        if(id=="state"){
+          state_code=false
+          stateToId(value).then(id=>{
+            state_code=id
+            if(state_code!=false){
+              setTimeout(() => { setValue("state_id", state_code) }, 1500)
+            }
+          }) 
+        }
+        setValue(id,value)
+      })
+      isFillingRequired=false;
+    }
+
+    if(!isIpniVerified && isFillingRequired){
+
+      Object.entries(data).forEach(([id, value]) => {
+        // Non IPNI Fillings
+        if(id=="scientific_name"){
+          value=getValue("scientific_name")
+        }
+        if(id=="country_name"){
+          value=value.replace(/\[.*?\]/g, '');
+          country_code=false
+          if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
+            value="USA"
+          }
+          existing_country_id=getCountryId()
+          if(existing_country_id=="115" && value.toLowerCase()!="india"){
+            value="unknown"
+          }
+          countryToId(value).then(id=>{
+            country_code=id
+            if(country_code!=false){
+              setTimeout(() => { setValue("country_id", country_code) }, 500)
+              if(country_code=="265"){
+                setValue("flag_country",true);
+              }
+            }else{
+              setTimeout(() => { setValue("country_id", "265") }, 500)
+              setValue("flag_country",true);
+            }
+          })
+
+        }
+        if(id=="state"){
+          state_code=false
+          value=value.replace(/\[.*?\]/g, '');
+          stateToId(value).then(id=>{
+            state_code=id
+            if(state_code!=false){
+              setTimeout(() => { setValue("state_id", state_code) }, 1500)
+            }
+          }) 
+        }
+        if(id=="locality"){
+          value=value.replace(/\[.*?\]/g, '');
+        }
+        if(id=="collector_name"){
+          value=value.replace(/\[.*?\]/g, '');
         }
         setValue(id,value)
       });
@@ -171,10 +251,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       });
     }
-    if(!AUTOSUBMIT){
-      alert(status)
-    }
-
+    
+    
+    
     if(status=="Confirm"){
       setTimeout(() => {
         const submitBtn = document.getElementById("acceptBtn");
@@ -211,7 +290,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
-
+/*
 function checkIfTaxonomist(data,isIpniVerified=false){
   if(isIpniVerified){
     if(
@@ -245,10 +324,10 @@ function checkIfTaxonomist(data,isIpniVerified=false){
     return true
   }
   return false
-}
+}*/
 
 
-function checkIfRejected(){
+function checkIfRejected(data){
   if(
      isValueMissing(getValue("genus")) ||
      isValueMissing(getValue("species"))
@@ -256,6 +335,21 @@ function checkIfRejected(){
       return true
     }
   return false
+}
+
+
+function checkIfTaxonimoist(data){
+  if(isValueMissing(getValue("author_name"))){
+    return true
+  }
+  if(isValueMissing(getFamilyValue())){
+    return true
+  }
+  scientific_name_confidence_score = data?.scientific_name_confidence_score ?? 1;
+  if(scientific_name_confidence_score<THREASHOLD_VALUE){
+    return true
+  }  
+  return false  
 }
 
 function checkIfConfirmed(data,ipni_verified=false){
@@ -331,7 +425,7 @@ function setValue(id, value) {
 
   if (el.type === "checkbox") {
     el.checked = value === 1 || value === true;
-    chec = el.getAttribute("name")
+    let chec = el.getAttribute("name")
     console.log({ key: chec, val: value })
 
   }
