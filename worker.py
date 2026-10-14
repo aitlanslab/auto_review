@@ -107,6 +107,7 @@ class AutomationController:
 
             print("=== FRESH RUN FROM TOP ===")
             if not self._interruptible_sleep(1):
+                print("Interrupted")
                 break
 
             try:

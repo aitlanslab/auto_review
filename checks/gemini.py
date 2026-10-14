@@ -19,6 +19,10 @@ def load_temp_chat():
             if current:
                 print(f"Found temp on {(att+1)} attempts")
                 return True
+            # mouse down if toop tip is visible
+            tooltip= find("images/bsi/tooltip.png", confidence=0.8)
+            if tooltip:
+                pilot.moveRel(0, 100, duration=0.25)
             # Check if temp chat is visible on top
             top_visibility = find("images/gemini/top_temp_chat.png", confidence=0.8)
             if top_visibility:
@@ -29,7 +33,7 @@ def load_temp_chat():
                 else:
                     print("Need to enable temp chat")
                     temp_mode = load_and_click("images/gemini/top_temp_chat.png", confidence=0.8)
-                    time.sleep(0.5)
+                    time.sleep(1)
                     continue
             else:
                 # check if new chat available on top
@@ -155,9 +159,15 @@ def write_prompt():
     pyperclip.copy(prompt)
     time.sleep(0.5)
     prompt_ss = "images/gemini/prompt_input.png"
-    if(find(prompt_ss)):
+    prompt_ss2= "images/gemini/prompt_input2.png"
+    if(find(prompt_ss) ):
         print("Found Place to write prompt")
         click_element(prompt_ss, confidence=0.8)
+        pilot.hotkey('ctrl', 'v')
+        print("Prompt pasted")
+    elif(find(prompt_ss2) ):
+        print("Found Place to write prompt")
+        click_element(prompt_ss2, confidence=0.8)
         pilot.hotkey('ctrl', 'v')
         print("Prompt pasted")
     time.sleep(2)

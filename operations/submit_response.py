@@ -24,10 +24,11 @@ def handle_extension():
     if is_element_present("images/bsi/success.png",duration=1):
         print("- Success")
         pilot.press("enter")
-        time.sleep(0.5)
+        time.sleep(1)
         return True
     if is_element_present("images/bsi/ok.png",duration=2):
-    # Check if IPNI verification required
+        print("Found an alert")
+        # Check if IPNI verification required
         if is_element_present("images/bsi/validate.png"):
             pilot.press("enter")
             load_and_click("images/bsi/b_ex.png")
@@ -51,37 +52,45 @@ def handle_extension():
                 pilot.hotkey("ctrl","v")
                 time.sleep(0.5)
                 load_and_click("images/bsi/extension_fill.png",confidence=0.8)
-                load_and_click("images/bsi/extension_save.png",confidence=0.8)
+                #load_and_click("images/bsi/extension_save.png",confidence=0.8)
                 time.sleep(0.5)
                 if(is_element_present("images/bsi/completed.png",duration=2)):
                     print("- Completed")
-                    pilot.press("enter")
                     time.sleep(0.5)
+                    pilot.press("enter")
+                    
                     return True
                 if(is_element_present("images/bsi/reject.png",duration=2)):
                     print("- Reject")
-                    pilot.press("enter")
                     time.sleep(0.5)
+                    pilot.press("enter")
                     return True
                 if(is_element_present("images/bsi/flag.png",duration=2)):
                     print("- Flag")
-                    pilot.press("enter")
                     time.sleep(0.5)
+                    pilot.press("enter")
                     return True
                 return False
-        if is_element_present("images/bsi/reject.png"):
+
+        pilot.press("enter")
+        time.sleep(0.5)
+        return True
+
+        if is_element_present("images/bsi/reject.png",duration=1):
             print("- Reject")
+            time.sleep(0.5)
             pilot.press("enter")
             time.sleep(0.5)
             return True
-        if is_element_present("images/bsi/flag.png"):
+        if is_element_present("images/bsi/flag.png",duration=1):
             print("- Flag")
             pilot.press("enter")
             time.sleep(0.5)
             return True
             
         return False
-    time.sleep(1)
+    pilot.press("enter")
+    time.sleep(0.5)
     return True
     
     """

@@ -31,6 +31,7 @@ function checkParagraph() {
   // For Gemini part
   if (window.location.href.includes("gemini.google.com")) {
     // Use MutationObserver instead of interval polling
+
     const observer = new MutationObserver((mutations) => {
       // Get ALL code containers
       const codeContainers = document.querySelectorAll(".code-container");
@@ -38,6 +39,7 @@ function checkParagraph() {
       if(icon!=undefined || icon!=null){
         icon.style.display="none"
       }
+
       // Check each code container for JSON
       codeContainers.forEach((container) => {
         // Try to find the actual code element inside

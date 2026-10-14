@@ -47,26 +47,31 @@ def handle_extension():
             load_and_click("images/bsi/extension_fill.png",confidence=0.8)
             load_and_click("images/bsi/extension_save.png",confidence=0.8)
             time.sleep(0.5)
-            if(is_element_present("images/bsi/completed.png",duration=2)):
+            if(is_element_present("images/bsi/completed.png",duration=1)):
                 print("- Completed")
                 pilot.press("enter")
                 time.sleep(0.5)
+                pilot.press("enter")
                 return True
-            if(is_element_present("images/bsi/reject.png",duration=2)):
+            if(is_element_present("images/bsi/reject.png",duration=1)):
                 print("- Reject")
                 pilot.press("enter")
                 time.sleep(0.5)
+                pilot.press("enter")
                 return True
-            if(is_element_present("images/bsi/flag.png",duration=2)):
+            if(is_element_present("images/bsi/flag.png",duration=1)):
                 print("- Flag")
                 pilot.press("enter")
                 time.sleep(0.5)
+                pilot.press("enter")
                 return True
+            
             return False
-    if is_element_present("images/bsi/reject.png",duration=2):
+    if is_element_present("images/bsi/reject.png",duration=1):
         print("- Reject")
         pilot.press("enter")
         time.sleep(0.5)
+        pilot.press("enter")
         return True
     
     time.sleep(1)
