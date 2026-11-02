@@ -209,12 +209,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         data["species"]=""
       }
       if(data["family"]=="No Family"){
-          status="Reject"
-          data["flag_family"]=true
-          data["flag_genus"]=true
-          data["flag_species"]=true
-          data["flag_scientific_name"]=true
-          data["flag_author_name"]=true
+          if(data["scientific_name"]!="" && (data["genus"]!="No Genus" || data["species"]!="No Species")){
+              status="Send to Taxonimist"
+              data["flag_family"]=true
+              data["flag_genus"]=true
+              data["flag_species"]=true
+              data["flag_scientific_name"]=true
+              data["flag_author_name"]=true
+          }else{
+            status="Reject"
+            data["flag_family"]=true
+            data["flag_genus"]=true
+            data["flag_species"]=true
+            data["flag_scientific_name"]=true
+            data["flag_author_name"]=true
+          }
+
         }
       // Handle cases
       if(data["scrapping_success"]==false){
