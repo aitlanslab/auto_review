@@ -69,8 +69,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       data["flag_species"]=true
       data["flag_scientific_name"]=true
       data["flag_author_name"]=true
-      data["family"]="No Family"
-      data["genus"]="No Genus"
+      //data["family"]="No Family"
+      //data["genus"]="No Genus"
 
       Object.entries(data).forEach(([id, value]) => {
         if(id=="country_name"){
@@ -153,7 +153,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if(!isIpniVerified && isFillingRequired){
-
       Object.entries(data).forEach(([id, value]) => {
         // Non IPNI Fillings
         if(id=="scientific_name"){
@@ -205,8 +204,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if(isIpniVerified && isFillingRequired){
       fields_already_filled=["country_name","country_id","state_id","collector_name","locality","lat_deg","lat_min","lat_sec","lon_deg","lon_min","lon_sec","latitude","longitude"]
+      if(!data["scientific_name"].includes(" ")){
+        data["scientific_name"]=getValue("scientific_name")
+      }
       if(data["scientific_name"].includes("sp.")){
-        data["species"]=""
+        data["species"]="sp."
       }
       if(data["family"]=="No Family"){
           if(data["scientific_name"]!="" && (data["genus"]!="No Genus" || data["species"]!="No Species")){
@@ -290,6 +292,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         if(AUTOSUBMIT) submitBtn.click();
+        
       }, 300);
     }else{
       alert(status)
@@ -340,7 +343,7 @@ function checkIfTaxonomist(data,isIpniVerified=false){
 function checkIfRejected(data){
   if(
      isValueMissing(getValue("genus")) ||
-     isValueMissing(getValue("species"))
+     isValueMissing(getValue("scientific_name"))
     ){
       return true
     }
