@@ -1,7 +1,7 @@
 import time
 import pyautogui as pilot
 from pyautogui import ImageNotFoundException
-from utils.executor import load_and_click, load_and_scroll_click, execute, is_element_present
+from utils.executor import load_and_click, load_and_scroll_click, execute, is_element_present, wait_for_first_image
 from utils.cursors import get
 from utils.operator import click_element
 from helpers.image import find
@@ -175,8 +175,24 @@ def write_prompt():
     return True
 
 def handle_response():
-    print("Waiting for response")
-    successful = load_and_scroll_click("images/chatgpt/ok.png", duration=20)
+    print("Waiting for response from gemini")
+    #successful = load_and_scroll_click("images/chatgpt/ok.png", duration=20)
+    
+    possiblilities=["images/chatgpt/ok.png","images/gemini/redo.png"]
+    res=wait_for_first_image(image_paths=possiblilities,max_time_to_wait=20)
+    if res==0:
+        print("Found OK")
+        load_and_scroll_click("images/chatgpt/ok.png",duration=2)
+        return True
+    if res==1:
+        print("Found Failed - Need to redo")
+        load_and_scroll_click("images/gemini/redo.png",duration=2)
+        time.sleep(0.5)
+        load_and_scroll_click("images/gemini/try_again.png",duration=2)
+        time.sleep(0.5)
+        handle_response()
+    return False
+
     if successful:
         print("Received Response")
         copied_text=pyperclip.paste()

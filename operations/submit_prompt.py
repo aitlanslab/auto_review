@@ -29,9 +29,43 @@ def write_prompt():
 
     return True
 
+from utils.executor import wait_for_first_image
+
 def handle_response():
     print("Waiting for response")
+    #successful=load_and_scroll_click("images/chatgpt/ok.png",duration=20)
+    possiblilities=["images/chatgpt/ok.png","images/gemini/redo.png"]
+    res=wait_for_first_image(image_paths=possiblilities,max_time_to_wait=20)
+    if res==0:
+        print("Found OK")
+        load_and_scroll_click("images/chatgpt/ok.png",duration=2)
+        return True
+    if res==1:
+        print("Found Failed - Need to redo")
+        load_and_scroll_click("images/gemini/redo.png",duration=2)
+        time.sleep(0.5)
+        load_and_scroll_click("images/gemini/try_again.png",duration=2)
+        time.sleep(0.5)
+        handle_response()
+
+
+    time.sleep(0.5)
+    pilot.moveTo(1195,935,duration=0.5)
+    pilot.click()
+    pilot.click()
+    time.sleep(0.3)
+    pilot.typewrite("Give the response whatever you understand in the expected json format",interval=0.1)
+    time.sleep(0.3)
+    pilot.press("enter")
+    pilot.press("enter")
+    time.sleep(0.2)
     successful=load_and_scroll_click("images/chatgpt/ok.png",duration=20)
+    if successful:
+        print("Received Response")
+        return True
+
+
+    """
     if successful:
         print("Received Response")
         return True
@@ -50,6 +84,7 @@ def handle_response():
         if successful:
             print("Received Response")
             return True
+    """
     
 def submit_prompt():
     write_prompt()

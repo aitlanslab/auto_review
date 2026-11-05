@@ -64,6 +64,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     setValue("current_name","");
     if(checkIfRejected(data)){
       status="Reject"
+      data["scientific_name"]=getValue("scientific_name")
       data["flag_family"]=true
       data["flag_genus"]=true
       data["flag_species"]=true
@@ -111,7 +112,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } 
     if(checkIfTaxonimoist(data) && isFillingRequired){
       status="Send to Taxonimist"
-      data["flag_species"]=true
+      data["scientific_name"]=getValue("scientific_name")
+      //data["flag_species"]=true
       data["flag_scientific_name"]=true
       data["flag_author_name"]=true
       Object.entries(data).forEach(([id, value]) => {
@@ -264,8 +266,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     }
     
-    
-    
     if(status=="Confirm"){
       setTimeout(() => {
         const submitBtn = document.getElementById("acceptBtn");
@@ -274,6 +274,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         if(AUTOSUBMIT) submitBtn.click();
+        //alert("Confirming")
       }, 300);
     }else if(status=="Reject"){
       setTimeout(() => {
@@ -293,55 +294,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         if(AUTOSUBMIT) submitBtn.click();
-        
+        //alert("Send to Taxonomist")
       }, 300);
     }else{
       alert(status)
     }
-    
   }, 300); 
-
 });
 
 
-/*
-function checkIfTaxonomist(data,isIpniVerified=false){
-  if(isIpniVerified){
-    if(
-     isValueMissing(data["genus"]) ||
-     isValueMissing(data["species"]) ||
-     isValueMissing(data["scientific_name"]) ||
-     isValueMissing(data["family"]) ||
-     isValueMissing(data["author_name"]) 
-    ){
-      return true
-    }else{
-      return false
-    }
-  }
-  // 1. Check any of the mandatory fields are missing
-  if(
-     isValueMissing(getValue("genus")) ||
-     isValueMissing(getValue("species")) ||
-     isValueMissing(getValue("scientific_name")) ||
-     isValueMissing(getFamilyValue()) ||
-     isValueMissing(getValue("author_name")) 
-    ){
-      if(isValueMissing(getValue("author_name"))){
-        //alert("Author name is missing - Check IPNI")
-      }
-      return true
-    }
-  // 2. Check if there exists any difference between present value and rectified value
-  if(data["scientific_name"]!=getValue("scientific_name") && !isIpniVerified){
-    //alert("Scientific Name not matching - Check IPNI")
-    return true
-  }
-  return false
-}*/
-
-
 function checkIfRejected(data){
+  /*if(!isValueMissing(getFamilyValue())){
+    return false
+  }*/
   if(
      isValueMissing(getValue("genus")) ||
      isValueMissing(getValue("scientific_name"))
