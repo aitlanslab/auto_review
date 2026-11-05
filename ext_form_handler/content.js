@@ -282,7 +282,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           alert("Button does not exists")
           return;
         }
-        if(AUTOSUBMIT) submitBtn.click();
+       if(AUTOSUBMIT) submitBtn.click();
+       //alert(status)
       }, 300);
     }else if(status=="Send to Taxonimist"){
       setTimeout(() => {
