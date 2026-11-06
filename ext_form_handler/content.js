@@ -61,7 +61,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     status="Validate with IPNI"
 
     old_genus=getValue("genus")
-    if(old_genus=="No Genus"){
+    new_genus=data["genus_name"]
+    if(old_genus=="No Genus" && new_genus!=""){
       setValue("genus",data["genus_name"])  
     }
 
