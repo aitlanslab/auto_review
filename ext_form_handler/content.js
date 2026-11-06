@@ -53,11 +53,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   setTimeout(() => {
     setValue("flag_family",false)
     setValue("flag_scientific_name",false)
+
     let isFillingRequired=true
     const data = message.payload;
     let isIpniVerified=false
     isIpniVerified = data?.ipni_verified ?? false;
     status="Validate with IPNI"
+
+    old_genus=getValue("genus")
+    if(old_genus=="No Genus"){
+      setValue("genus",data["genus_name"])  
+    }
+
     if(isIpniVerified){
       status="Confirm"
     }
