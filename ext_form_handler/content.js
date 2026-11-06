@@ -61,7 +61,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     status="Validate with IPNI"
 
     old_genus=getValue("genus")
-    new_genus=data["genus_name"]
+    new_genus=data["genus_name"] || ""
     if(old_genus=="No Genus" && new_genus!=""){
       setValue("genus",data["genus_name"])  
     }
@@ -309,6 +309,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         if(AUTOSUBMIT){
            submitBtn.click(); 
+           //alert(status)
           }else{
           alert("Confirming")
         }
@@ -323,7 +324,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
        if(AUTOSUBMIT){ 
         submitBtn.click(); 
-
+        //alert(status)
        }else{ alert(status) }
        
       }, 300);
@@ -360,7 +361,7 @@ function checkIfRejected(data){
 
 
 function checkIfTaxonimoist(data){
-  if(isValueMissing(getValue("author_name"))){
+  if(isValueMissing(getValue("author_name")) && (isValueMissing(getValue("genus")))){
     return true
   }
   if(isValueMissing(getFamilyValue())){
