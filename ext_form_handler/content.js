@@ -64,12 +64,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     setValue("current_name","");
     if(checkIfRejected(data)){
       status="Reject"
-      data["scientific_name"]=getValue("scientific_name")
-      data["flag_family"]=true
-      data["flag_genus"]=true
-      data["flag_species"]=true
-      data["flag_scientific_name"]=true
-      data["flag_author_name"]=true
+      if(!isValueMissing(getValue("scientific_name"))){
+        status="Validate with IPNI"
+      }else{
+          if(!AUTOSUBMIT){
+            alert("Reject - Line 68")
+          }
+          data["scientific_name"]=getValue("scientific_name")
+          data["flag_family"]=true
+          data["flag_genus"]=true
+          data["flag_species"]=true
+          data["flag_scientific_name"]=true
+          data["flag_author_name"]=true
+      }
+
       //data["family"]="No Family"
       //data["genus"]="No Genus"
 
@@ -222,6 +230,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               data["flag_author_name"]=true
           }else{
             status="Reject"
+            if(!AUTOSUBMIT){
+              alert("Reject - Line 229")
+            }
             data["flag_family"]=true
             data["flag_genus"]=true
             data["flag_species"]=true
@@ -237,6 +248,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         status="Send to Taxonimist"
         if(data["family"]=="No Family"){
           status="Reject"
+          if(!AUTOSUBMIT){
+            alert("Reject - Line 68")
+          }
           data["flag_family"]=true
           data["flag_genus"]=true
           data["flag_species"]=true
@@ -251,7 +265,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if(status!="Reject"){
           status="Send to Taxonimist"
         }
-        
       }
 
       Object.entries(data).forEach(([id, value]) => {
@@ -273,8 +286,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           alert("Button does not exists")
           return;
         }
-        if(AUTOSUBMIT) submitBtn.click();
-        //alert("Confirming")
+        if(AUTOSUBMIT){
+           submitBtn.click(); 
+          }else{
+          alert("Confirming")
+        }
+        
       }, 300);
     }else if(status=="Reject"){
       setTimeout(() => {
@@ -283,8 +300,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           alert("Button does not exists")
           return;
         }
-       if(AUTOSUBMIT) submitBtn.click();
-       //alert(status)
+       if(AUTOSUBMIT){ 
+        submitBtn.click(); 
+
+       }else{ alert(status) }
+       
       }, 300);
     }else if(status=="Send to Taxonimist"){
       setTimeout(() => {
@@ -293,8 +313,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           alert("Button does not exists")
           return;
         }
-        if(AUTOSUBMIT) submitBtn.click();
-        //alert("Send to Taxonomist")
+        if(AUTOSUBMIT){ 
+          submitBtn.click();
+         }else{alert("Send to Taxonomist") }
+        
       }, 300);
     }else{
       alert(status)
@@ -304,9 +326,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 function checkIfRejected(data){
-  /*if(!isValueMissing(getFamilyValue())){
-    return false
-  }*/
+  // If scientific name is present but genus is not present - it can not be rejected
   if(
      isValueMissing(getValue("genus")) ||
      isValueMissing(getValue("scientific_name"))
