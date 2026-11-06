@@ -138,6 +138,7 @@ function pickBestResult(results, query) {
         button.textContent = "Scraping...";
         // First try: genus + species
         let keyword = `${json.genus} ${json.species}`;
+        keyword = keyword.replace("sp.","");
         if(json.genus=="No Genus"){
             keyword=json.scientific_name
         }
