@@ -45,6 +45,7 @@ function isStringSame(str1,str2){
 
 THREASHOLD_VALUE=0.90
 AUTOSUBMIT=true
+DEBUG=false
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Delay to ensure DOM + Select2 are ready
@@ -120,10 +121,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } 
     if(checkIfTaxonimoist(data) && isFillingRequired){
       status="Send to Taxonimist"
-      data["scientific_name"]=getValue("scientific_name")
-      //data["flag_species"]=true
-      data["flag_scientific_name"]=true
-      data["flag_author_name"]=true
+      if(DEBUG) alert("Taxonomist Line 122")
+      if(isValueMissing(getFamilyValue()) && !data["ipni_verified"]){
+        status="Validate with IPNI"
+      }else{
+        if(getFamilyValue()=="No Family"){
+          data["flag_family"]=true
+        }
+        data["scientific_name"]=getValue("scientific_name")
+        //data["flag_species"]=true
+        data["flag_scientific_name"]=true
+        data["flag_author_name"]=true
+      }
+
       Object.entries(data).forEach(([id, value]) => {
         if(id=="country_name"){
           country_code=false
@@ -223,6 +233,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if(data["family"]=="No Family"){
           if(data["scientific_name"]!="" && (data["genus"]!="No Genus" || data["species"]!="No Species")){
               status="Send to Taxonimist"
+              if(DEBUG) alert("Send to taxonomist - Line 226")
               data["flag_family"]=true
               data["flag_genus"]=true
               data["flag_species"]=true
@@ -246,6 +257,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         data["flag_family"]=true
         data["flag_scientific_name"]=true
         status="Send to Taxonimist"
+        if(DEBUG) alert("Send to taxonomist - Line 521")
         if(data["family"]=="No Family"){
           status="Reject"
           if(!AUTOSUBMIT){
@@ -264,6 +276,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         //data["author_name"]="" 
         if(status!="Reject"){
           status="Send to Taxonimist"
+          if(DEBUG) alert("Send to taxonomist - Line 269")
         }
       }
 
@@ -315,6 +328,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         if(AUTOSUBMIT){ 
           submitBtn.click();
+          //alert("Taxonomist")
          }else{alert("Send to Taxonomist") }
         
       }, 300);
@@ -344,11 +358,8 @@ function checkIfTaxonimoist(data){
   if(isValueMissing(getFamilyValue())){
     return true
   }
-  scientific_name_confidence_score = data?.scientific_name_confidence_score ?? 1;
-  if(scientific_name_confidence_score<THREASHOLD_VALUE){
-    return true
-  }  
   return false  
+
 }
 
 function checkIfConfirmed(data,ipni_verified=false){
