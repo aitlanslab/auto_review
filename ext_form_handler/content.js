@@ -75,7 +75,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       status="Reject"
       if(!isValueMissing(getValue("scientific_name"))){
         status="Validate with IPNI"
-      }else{
+      }
+      else if(isValueMissing(getValue("scientific_name")) && (!isValueMissing(getValue("genus")) || !isValueMissing(getValue("species")) )){
+        status="Validate with IPNI"
+      } 
+      else{
           if(!AUTOSUBMIT){
             alert("Reject - Line 68")
           }
@@ -112,7 +116,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               setValue("flag_country",true);
             }
           })
-
         }
         if(id=="state"){
           state_code=false
@@ -288,6 +291,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       }
 
+      // If not getting family name and author name flag to taxonomist
+      if(data["family"]=="No Family" || data["author_name"]=="null" || data["author_name"]==null){
+        status="Send to Taxonimist"
+      }
+
       Object.entries(data).forEach(([id, value]) => {
         // IPNI Fillings, ignoring the fields already filled
         if(!fields_already_filled.includes(id) && isFillingRequired){
@@ -300,7 +308,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     }
     
+
+    if(status=="Reject" && data["plant_name"]!=""){
+      status="Send to Taxonimist"
+    }
+
     if(status=="Confirm"){
+        data["flag_family"]=false
+        data["flag_genus"]=false
+        data["flag_species"]=false
+        data["flag_scientific_name"]=false
+        data["flag_author_name"]=false
+        Object.entries(data).forEach(([id, value]) => {
+          setValue(id,value)
+        });
       setTimeout(() => {
         const submitBtn = document.getElementById("acceptBtn");
         if (!submitBtn) {
@@ -330,6 +351,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }, 300);
     }else if(status=="Send to Taxonimist"){
       setTimeout(() => {
+
         const submitBtn = document.getElementById("flagToTaxonomistBtn");
         if (!submitBtn) {
           alert("Button does not exists")
@@ -459,6 +481,9 @@ function setValue(id, value) {
     }
   }
   else {
+    if(value==null){
+      value=""
+    }
     value=value.toString()
     value = value.replace("&amp;", "&")
     el.value = value ?? "";
