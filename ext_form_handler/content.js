@@ -234,7 +234,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if(isIpniVerified && isFillingRequired){
+      
       fields_already_filled=["country_name","country_id","state_id","collector_name","locality","lat_deg","lat_min","lat_sec","lon_deg","lon_min","lon_sec","latitude","longitude"]
+      
       if(!data["scientific_name"].includes(" ")){
         data["scientific_name"]=getValue("scientific_name")
       }
@@ -250,6 +252,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               data["flag_species"]=true
               data["flag_scientific_name"]=true
               data["flag_author_name"]=true
+          }else if(data["genus"]!="No Genus" && data["genus"].length!=0 && (data["family"]=="No Family" || data["species"]=="sp." || data["species"]=="No Species")){
+            status="Send to Taxonimist"
           }else{
             status="Reject"
             if(!AUTOSUBMIT){

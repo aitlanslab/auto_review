@@ -143,6 +143,7 @@ function pickBestResult(results, query) {
             keyword=json.scientific_name
         }
 
+
         // Helper function for search
         async function searchIPNI(query) {
             const url = `https://ipni.org/api/1/search?q=${encodeURIComponent(query)}`;
@@ -155,7 +156,6 @@ function pickBestResult(results, query) {
 
         // Fallback: only genus
         if (!searchJson.results || !searchJson.results.length) {
-
             keyword = json.genus;
 
             console.log("No species result found. Retrying with genus only...");
@@ -200,9 +200,14 @@ function pickBestResult(results, query) {
         };
 
         // Authors
-        const authors = [...doc.querySelectorAll(".author-link")]
+        let authors = [...doc.querySelectorAll(".author-link")]
             .map(el => el.textContent.trim());
 
+        if(authors.length==0){
+            authors = doc.querySelector(
+                '.record-detail__heading h2 i[lang="la"]'
+            ).nextSibling.textContent.trim().split(';');
+        }
         // Final data
         const data = {
             searchedKeyword: keyword,
@@ -226,18 +231,25 @@ function pickBestResult(results, query) {
             json["family"]="No Family"
             json["flag_family"]=true
         }
+        //make sure author name != null
+        if(json["author_name"]==null || json["author_name"]=="null"){
+            json["author_name"]=""
+        }
+
         if(json["author_name"].length==0){
             json["author_name"]=data["firstAuthor"]
-            if(!json["scientific_name"].includes(data["firstAuthor"])){
+            if(!json["scientific_name"].includes(data["firstAuthor"]) && (data["firstAuthor"]!=null || data["firstAuthor"]!="null")){
                 json["scientific_name"]=json["scientific_name"]+" "+data["firstAuthor"]
             }
         }
+
+
         //json["scientific_name"]=scientificName
         json["ipni_verified"]=true
         /*if(authors.length!=0){
             json["author_name"]=authors[0]
         }*/
-        json["multiple_authors"]=false
+        json["multiple_authors"]=authors.length>1 
         if(json["family"]==null){
             json["family"]="null"
         }
