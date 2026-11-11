@@ -66,6 +66,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       setValue("genus",data["genus_name"])  
     }
 
+    if(getValue("species").toLowerCase()=="no species" || getValue("species").toLowerCase()==""){
+      setValue("species","sp.")
+      if(!getValue("scientific_name").includes("sp.") && getValue("genus").toLowerCase()!="no genus"){
+        sc_name=getValue("genus")+" sp. "+getValue("author_name")
+        setValue("scientific_name",sc_name)
+      }
+    }
+
+
     if(isIpniVerified){
       status="Confirm"
     }

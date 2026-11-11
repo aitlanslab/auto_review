@@ -249,7 +249,7 @@ function pickBestResult(results, query) {
         /*if(authors.length!=0){
             json["author_name"]=authors[0]
         }*/
-        json["multiple_authors"]=authors.length>1 
+        json["multiple_authors"]=false
         if(json["family"]==null){
             json["family"]="null"
         }
