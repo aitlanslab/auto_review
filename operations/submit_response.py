@@ -28,12 +28,12 @@ def handle_extension():
     if is_element_present("images/bsi/ok.png",duration=1):
         print("Found an alert")
         # Check if IPNI verification required
-        if is_element_present("images/bsi/completed.png"):
+        if is_element_present("images/bsi/completed.png",duration=1):
             pilot.press("enter")
             time.sleep(0.5)
             return True
 
-        if is_element_present("images/bsi/validate.png"):
+        if is_element_present("images/bsi/validate.png",duration=1):
             pilot.press("enter")
             load_and_click("images/bsi/b_ex.png")
             time.sleep(0.5)
