@@ -60,6 +60,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     isIpniVerified = data?.ipni_verified ?? false;
     status="Validate with IPNI"
 
+
     old_genus=getValue("genus")
     new_genus=data["genus_name"] || ""
     if(old_genus=="No Genus" && new_genus!=""){
@@ -78,8 +79,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if(isIpniVerified){
       status="Confirm"
     }
+
     fam=getFamilyValue()
     setValue("current_name","");
+    let prequalified=false
+    // By pass IPNI Verification if all the required fields are present
+    // Code of 12 Nov 2026
+     if(
+        fam.toLowerCase()!="no family" && fam.length!=0 && 
+        getValue("genus").toLowerCase()!="no genus" && getValue("genus").length!=0 &&
+        getValue("species").toLowerCase()!="no species" && getValue("species").length!=0 &&
+        getValue("author_name").length!=0 && getValue("scientific_name").includes(getValue("author_name")) &&
+        getValue("scientific_name").length!=0 &&  getValue("scientific_name").includes(getValue("species")) && getValue("scientific_name").split(' ').length - 1 >=2
+      ){
+          status="Confirm"
+          isIpniVerified=true
+          prequalified=true
+      }
+    
+    
+
+
+    // Case 1 - Rejected
     if(checkIfRejected(data)){
       status="Reject"
       if(!isValueMissing(getValue("scientific_name"))){
@@ -139,9 +160,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       })
       isFillingRequired=false;
     } 
-    if(checkIfTaxonimoist(data) && isFillingRequired){
+
+    // Case 2 - Send to Taxonomist
+    if(checkIfTaxonimoist(data) && isFillingRequired && !prequalified){
       status="Send to Taxonimist"
-      if(DEBUG) alert("Taxonomist Line 122")
+      if(DEBUG) alert("Taxonomist Line 165")
       if(isValueMissing(getFamilyValue()) && !data["ipni_verified"]){
         status="Validate with IPNI"
       }else{
@@ -192,7 +215,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       isFillingRequired=false;
     }
 
-    if(!isIpniVerified && isFillingRequired){
+    // Case 3 - Check if IPNI verification required
+    if(!isIpniVerified && isFillingRequired && !prequalified){
       Object.entries(data).forEach(([id, value]) => {
         // Non IPNI Fillings
         if(id=="scientific_name"){
@@ -242,10 +266,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     }
 
-    if(isIpniVerified && isFillingRequired){
+    // Case 4 - If IPNI verified
+    if(isIpniVerified && isFillingRequired && !prequalified){
       
       fields_already_filled=["country_name","country_id","state_id","collector_name","locality","lat_deg","lat_min","lat_sec","lon_deg","lon_min","lon_sec","latitude","longitude"]
-      
       if(!data["scientific_name"].includes(" ")){
         data["scientific_name"]=getValue("scientific_name")
       }
@@ -263,6 +287,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               data["flag_author_name"]=true
           }else if(data["genus"]!="No Genus" && data["genus"].length!=0 && (data["family"]=="No Family" || data["species"]=="sp." || data["species"]=="No Species")){
             status="Send to Taxonimist"
+            if(DEBUG) alert("Taxonomist Line 287")
           }else{
             status="Reject"
             if(!AUTOSUBMIT){
@@ -307,6 +332,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // If not getting family name and author name flag to taxonomist
       if(data["family"]=="No Family" || data["author_name"]=="null" || data["author_name"]==null){
         status="Send to Taxonimist"
+        if(DEBUG) alert("Taxonomist Line 331")
       }
 
       Object.entries(data).forEach(([id, value]) => {
@@ -322,8 +348,57 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     
 
+    // Case 5 - Everything is already correct
+    if(prequalified){
+      Object.entries(data).forEach(([id, value]) => {
+        // Non IPNI Fillings
+        if(id=="country_name"){
+          value=value.replace(/\[.*?\]/g, '');
+          country_code=false
+          if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
+            value="USA"
+          }
+          existing_country_id=getCountryId()
+          if(existing_country_id=="115" && value.toLowerCase()!="india"){
+            value="unknown"
+          }
+          countryToId(value).then(id=>{
+            country_code=id
+            if(country_code!=false){
+              setTimeout(() => { setValue("country_id", country_code) }, 500)
+              if(country_code=="265"){
+                setValue("flag_country",true);
+              }
+            }else{
+              setTimeout(() => { setValue("country_id", "265") }, 500)
+              setValue("flag_country",true);
+            }
+          })
+
+        }
+        if(id=="state"){
+          state_code=false
+          value=value.replace(/\[.*?\]/g, '');
+          stateToId(value).then(id=>{
+            state_code=id
+            if(state_code!=false){
+              setTimeout(() => { setValue("state_id", state_code) }, 1500)
+            }
+          }) 
+        }
+        if(id=="locality"){
+          value=value.replace(/\[.*?\]/g, '');
+        }
+        if(id=="collector_name"){
+          value=value.replace(/\[.*?\]/g, '');
+        }
+        setValue(id,value)
+      });
+    }
+
     if(status=="Reject" && data["plant_name"]!=""){
       status="Send to Taxonimist"
+      if(DEBUG) alert("Taxonomist Line 348")
     }
 
     if(status=="Confirm"){

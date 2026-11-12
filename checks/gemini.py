@@ -105,6 +105,7 @@ def copy_image():
             time.sleep(1)
 
         time.sleep(0.5)
+        pilot.press("enter", interval=0.1)
 
 
 
@@ -179,7 +180,7 @@ def handle_response():
     #successful = load_and_scroll_click("images/chatgpt/ok.png", duration=20)
     
     possiblilities=["images/chatgpt/ok.png","images/gemini/redo.png"]
-    res=wait_for_first_image(image_paths=possiblilities,max_time_to_wait=20)
+    res=wait_for_first_image(image_paths=possiblilities,max_time_to_wait=30)
     if res==0:
         print("Found OK")
         load_and_scroll_click("images/chatgpt/ok.png",duration=2)
