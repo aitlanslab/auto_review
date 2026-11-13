@@ -182,7 +182,7 @@ def handle_response():
     #successful = load_and_scroll_click("images/chatgpt/ok.png", duration=20)
     
     possiblilities=["images/chatgpt/ok.png","images/gemini/redo.png"]
-    res=wait_for_first_image(image_paths=possiblilities,max_time_to_wait=30)
+    res=wait_for_first_image(image_paths=possiblilities,max_time_to_wait=35)
     if res==0:
         print("Found OK")
         load_and_scroll_click("images/chatgpt/ok.png",duration=2)
