@@ -174,9 +174,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } 
 
     // Case 2 - Send to Taxonomist
-    if(checkIfTaxonimoist(data) && isFillingRequired && !prequalified){
+    if(checkIfTaxonimoist(data) && isFillingRequired && !prequalified && !isIpniVerified){
       status="Send to Taxonimist"
-      if(DEBUG) alert("Taxonomist Line 165")
+      if(DEBUG) alert("Taxonomist Line 178")
       if(isValueMissing(getFamilyValue()) && !data["ipni_verified"]){
         status="Validate with IPNI"
       }else{
@@ -280,7 +280,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     // Case 4 - If IPNI verified
     if(isIpniVerified && isFillingRequired && !prequalified){
-      
       fields_already_filled=["country_name","country_id","state_id","collector_name","locality","lat_deg","lat_min","lat_sec","lon_deg","lon_min","lon_sec","latitude","longitude"]
       if(!data["scientific_name"].includes(" ")){
         data["scientific_name"]=getValue("scientific_name")
@@ -288,6 +287,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if(data["scientific_name"].includes("sp.")){
         data["species"]="sp."
       }
+
       if(data["family"]=="No Family"){
           if(data["scientific_name"]!="" && (data["genus"]!="No Genus" || data["species"]!="No Species")){
               status="Send to Taxonimist"
