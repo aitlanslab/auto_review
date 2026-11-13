@@ -113,8 +113,10 @@ def paste_image():
     prompt_ss = "images/gemini/attachment_input.png"
 
     if find(prompt_ss):
-        click_element(prompt_ss, confidence=0.8)
-        time.sleep(1)
+        #click_element(prompt_ss, confidence=0.8)
+        pilot.moveTo(1709,896,duration=0.5)
+        pilot.click()
+        time.sleep(0.5)
 
         pilot.hotkey('ctrl', 'v')
         time.sleep(3)
