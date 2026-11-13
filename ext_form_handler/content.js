@@ -58,6 +58,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const data = message.payload;
     let isIpniVerified=false
     isIpniVerified = data?.ipni_verified ?? false;
+
+    //remove scientific name
+    if(!isIpniVerified){
+      delete data.scientific_name
+    }
+    
+
     status="Validate with IPNI"
 
 
@@ -67,6 +74,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       setValue("genus",data["genus_name"])  
     }
 
+
     if(getValue("species").toLowerCase()=="no species" || getValue("species").toLowerCase()==""){
       setValue("species","sp.")
       if(!getValue("scientific_name").includes("sp.") && getValue("genus").toLowerCase()!="no genus"){
@@ -74,6 +82,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         setValue("scientific_name",sc_name)
       }
     }
+
+    // If scientific name is missing the author name put it
+    if(!getValue("scientific_name").includes(getValue("author_name")) && getValue("author_name").length!=0){
+      sc_name=getValue("genus")+" "+getValue("species")+" "+getValue("author_name")
+      setValue("scientific_name",sc_name)
+    }
+
 
 
     if(isIpniVerified){
@@ -97,9 +112,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           prequalified=true
       }
     
-    
-
-
     // Case 1 - Rejected
     if(checkIfRejected(data)){
       status="Reject"
