@@ -15,8 +15,8 @@ def handle_extension():
     pilot.hotkey("ctrl","v")
     time.sleep(0.5)
     click_element("images/bsi/extension_fill.png",confidence=0.8)
-    time.sleep(0.2)
-    click_element("images/bsi/extension_save.png",confidence=0.8)
+    time.sleep(1)
+    # click_element("images/bsi/extension_save.png",confidence=0.8)
     #worker.controller.pause()
     print("Checking alert")
     # Check if got response
@@ -28,7 +28,7 @@ def handle_extension():
     if is_element_present("images/bsi/ok.png",duration=1):
         print("Found an alert")
         # Check if IPNI verification required
-        if is_element_present("images/bsi/completed.png",duration=1):
+        if is_element_present("images/bsi/annotated.png",duration=1):
             pilot.press("enter")
             time.sleep(0.5)
             return True
@@ -59,7 +59,7 @@ def handle_extension():
                 #load_and_click("images/bsi/extension_save.png",confidence=0.8)
                 time.sleep(0.5)
 
-                possiblilities=["images/bsi/completed.png","images/bsi/reject.png","images/bsi/flag.png"]
+                possiblilities=["images/bsi/annotated.png","images/bsi/reject.png","images/bsi/flag.png"]
                 res=wait_for_first_image(image_paths=possiblilities, max_time_to_wait=2)
                 if res==0 or res==1 or res==2:
                     time.sleep(0.5)

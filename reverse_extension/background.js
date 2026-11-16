@@ -1,6 +1,6 @@
 chrome.action.onClicked.addListener((tab) => {
   // Check if the tab URL matches the review annotations page
-  if (tab.url && tab.url.includes('review_annotations.php')) {
+  if (tab.url && ( tab.url.includes('review_annotations.php') || tab.url.includes('annotations.php') )) {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       function: extractAndShowData
@@ -10,6 +10,7 @@ chrome.action.onClicked.addListener((tab) => {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       function: () => {
+
         alert('Please navigate to the BSI Review Annotations page first.');
       }
     });
@@ -102,38 +103,10 @@ function extractAndShowData() {
       // Build the JSON object in the exact format requested
       const data = {
         family: getSelectText('family'),
-        family_handwritten:false,
         genus: getVal('genus'),
-        genus_handwritten:false,
         species: getVal('species'),
-        species_handwritten:false,
         author_name: getVal('author_name'),
-        author_name_handwritten:false,
-        scientific_name: getVal('scientific_name'),
-        scientific_name_handwritten:false,
-        collector_name: getVal('collector_name'),
-        collector_name_handwritten:false,
-        is_full_date_available: isFullDateAvailable,
-        is_date_handwritten:false,
-        day_of_collection: day || '',
-        month_of_collection: month || '',
-        year_of_collection: year || '',
-        country_name: getSelectText('country_id'),
-        country_name_handwritten:false,
-        state: getSelectText('state_id'),
-        state_handwritten:false,
-        district: getVal('locality'), // Using locality as district
-        district_handwritten:false,
-        city: '',
-        city_handwritten:false,
-        village: '',
-        village_handwritten:false,
-        locality: getVal('locality'),
-        locality_handwritten:false,
-        collection_number: getVal('collection_number'),
-        altitude: getVal('altitude'),
-        latitude: latitude,
-        longitude: longitude
+        scientific_name: getVal('scientific_name')
       };
 
       // Clean up - ensure all fields exist with proper values
@@ -201,10 +174,10 @@ function extractAndShowData() {
   }
 
   // Check if we're on the right page
-  if (!window.location.href.includes('review_annotations.php')) {
+  /*if (!window.location.href.includes('review_annotations.php') || !window.location.href.includes('annotations.php')) {
     alert('Please navigate to the BSI Review Annotations page (review_annotations.php) first.');
     return;
-  }
+  }*/
 
   // Check if required elements exist
   const imageElement = document.getElementById('previewImage');

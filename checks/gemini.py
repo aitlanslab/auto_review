@@ -159,6 +159,27 @@ def write_prompt():
     - Do not consider text - "Botanical Survey of India", it is generic sticker present.
     - Confidence score is a value <1, indicating the confidence of extracted/predicted values, some texts are handwritten hard to determine.
     '''+random.choice(statements)
+
+
+    prompt="""Act as a taxonomist, attached is a herbarium sheet, analyze the attached image and extract the values and fill the json fields:```
+{
+"family":"",
+"genus":"",
+"species":"",
+"scientific_name":"",
+"author_name":"",
+"collector_name":"",
+"collection_number":"",
+"collection_day":0,
+"collection_month":0,
+"collection_year":0,
+"country_name":"",
+"state":"",
+"altitude":"",
+"locality":""
+}
+```, your response should not contain any assumed values, for collection_year only write the values available in the sheet - no need to assume the full year if it is not available in the image, should only fill the values present in the image, else leave it blank. Must fill `country_name` if `state` is available. Only respond in json without any description and narration."""
+
     pyperclip.copy(prompt)
     time.sleep(0.5)
     prompt_ss = "images/gemini/prompt_input.png"

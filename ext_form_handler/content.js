@@ -31,7 +31,7 @@ async function countryToId(countryName) {
       }
     }
   }
-  return false;
+  return 265;
 }
 
 function isStringSame(str1,str2){
@@ -51,11 +51,65 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Delay to ensure DOM + Select2 are ready
 
   setTimeout(() => {
-    setValue("flag_family",false)
-    setValue("flag_scientific_name",false)
+    
+    // Mark latitude and longitude to NA
+    const naRadio = document.querySelector('input[name="coordinate_format"][value="na"]');
+    if(naRadio){
+      naRadio.checked = true;
+      naRadio.dispatchEvent(new Event('change', { bubbles: true }));
+      naRadio.dispatchEvent(new Event('input', { bubbles: true }));
+    }
 
+      
     let isFillingRequired=true
     const data = message.payload;
+    // Remove 0 from dates
+    if(data["collection_day"]==0){
+      data["collection_day"]=""
+    }
+    if(data["collection_month"]==0){
+      data["collection_month"]=""
+    }
+    if(data["collection_year"]==0){
+      data["collection_year"]=""
+    }
+
+    if(data["collector_name"]){
+      data["collector_name"]=data["collector_name"].replaceAll("|",", ")
+    }
+
+    // Flag family if required
+    if(data["family"]=="" || data["family"].toLowerCase()=="no family"){
+      setValue("flag_family",true)
+      setFamilyValue("No Family")
+    }else{
+      setFamilyValue(data["family"])
+      setValue("flag_family",false)
+      setValue("flag_scientific_name",false)
+    }
+
+    // Flag genus if no genus available
+    if(data["genus"].toLowerCase()=="no genus" || data["genus"]==""){
+      data["genus"]="No Genus"
+      setValue("genus","No Genus")
+      setValue("flag_genus",true)
+      setValue("flag_scientific_name",true)
+    }else{
+      setValue("flag_genus",false)
+      setValue("flag_scientific_name",false)
+    }
+
+    // Flag species if no species is available
+    if(data["species"].toLowerCase()=="" && data["species"].length==0){
+      data["species"]="sp."
+      setValue("flag_species",true)
+      setValue("species","sp.")
+    }else{
+      setValue("flag_species",false)
+    }
+       
+
+
     let isIpniVerified=false
     isIpniVerified = data?.ipni_verified ?? false;
 
@@ -63,7 +117,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if(!isIpniVerified){
       delete data.scientific_name
     }
+
+    if(data["country_name"]==""){
+      data["country_name"]="UNKNOWN"
+    }
     
+    if(data["country_name"]=="United States"){
+      data["country_name"]="USA"
+    }
+    if(data["state"]=="Pulau Penang"){
+      data["state"]="Pulau Pinang"
+    }
 
     status="Validate with IPNI"
 
@@ -95,7 +159,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       status="Confirm"
     }
 
-    fam=getFamilyValue()
+    //fam=getFamilyValue()
+    fam=data["family"]
     setValue("current_name","");
     let prequalified=false
     // By pass IPNI Verification if all the required fields are present
@@ -112,137 +177,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           prequalified=true
       }
     
-    // Case 1 - Rejected
-    if(checkIfRejected(data)){
-      status="Reject"
-      if(!isValueMissing(getValue("scientific_name"))){
-        status="Validate with IPNI"
-      }
-      else if(isValueMissing(getValue("scientific_name")) && (!isValueMissing(getValue("genus")) || !isValueMissing(getValue("species")) )){
-        status="Validate with IPNI"
-      } 
-      else{
-          if(!AUTOSUBMIT){
-            alert("Reject - Line 68")
-          }
-          data["scientific_name"]=getValue("scientific_name")
-          data["flag_family"]=true
-          data["flag_genus"]=true
-          data["flag_species"]=true
-          data["flag_scientific_name"]=true
-          data["flag_author_name"]=true
-      }
-
-      //data["family"]="No Family"
-      //data["genus"]="No Genus"
-
-      Object.entries(data).forEach(([id, value]) => {
-        if(id=="country_name"){
-          country_code=false
-          if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
-            value="USA"
-          }
-          existing_country_id=getCountryId()
-          if(existing_country_id=="115" && value.toLowerCase()!="india"){
-            value="unknown"
-          }
-          countryToId(value).then(id=>{
-            country_code=id
-            if(country_code!=false){
-              setTimeout(() => { setValue("country_id", country_code) }, 500)
-              if(country_code=="265"){
-                setValue("flag_country",true);
-              }
-            }else{
-              setTimeout(() => { setValue("country_id", "265") }, 500)
-              setValue("flag_country",true);
-            }
-          })
-        }
-        if(id=="state"){
-          state_code=false
-          stateToId(value).then(id=>{
-            state_code=id
-            if(state_code!=false){
-              setTimeout(() => { setValue("state_id", state_code) }, 1500)
-            }
-          }) 
-        }
-        setValue(id,value)
-      })
-      isFillingRequired=false;
-    } 
-
-    // Case 2 - Send to Taxonomist
-    if(checkIfTaxonimoist(data) && isFillingRequired && !prequalified && !isIpniVerified){
-      status="Send to Taxonimist"
-      if(DEBUG) alert("Taxonomist Line 178")
-      if(isValueMissing(getFamilyValue()) && !data["ipni_verified"]){
-        status="Validate with IPNI"
-      }else{
-        if(getFamilyValue()=="No Family"){
-          data["flag_family"]=true
-        }
-        data["scientific_name"]=getValue("scientific_name")
-        //data["flag_species"]=true
-        data["flag_scientific_name"]=true
-        data["flag_author_name"]=true
-      }
-
-      Object.entries(data).forEach(([id, value]) => {
-        if(id=="country_name"){
-          country_code=false
-          if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
-            value="USA"
-          }
-          existing_country_id=getCountryId()
-          if(existing_country_id=="115" && value.toLowerCase()!="india"){
-            value="unknown"
-          }
-          countryToId(value).then(id=>{
-            country_code=id
-            if(country_code!=false){
-              setTimeout(() => { setValue("country_id", country_code) }, 500)
-              if(country_code=="265"){
-                setValue("flag_country",true);
-              }
-            }else{
-              setTimeout(() => { setValue("country_id", "265") }, 500)
-              setValue("flag_country",true);
-            }
-          })
-
-        }
-        if(id=="state"){
-          state_code=false
-          stateToId(value).then(id=>{
-            state_code=id
-            if(state_code!=false){
-              setTimeout(() => { setValue("state_id", state_code) }, 1500)
-            }
-          }) 
-        }
-        setValue(id,value)
-      })
-      isFillingRequired=false;
-    }
-
     // Case 3 - Check if IPNI verification required
     if(!isIpniVerified && isFillingRequired && !prequalified){
+               
+      genus=data["genus"]
+      species=data["species"] || "sp."
+      author_name=data["author_name"]
+
+      if(genus.toLowerCase()!="no genus" && genus.toLowerCase().length!=0 && species.toLowerCase()!="" && species!="no species" && author_name.length!=0){
+        data["scientific_name"]=genus+" "+species+" "+author_name;
+      }else if(data["scientific_name"] && data["scientific_name"].split(" ").length<2){
+        data["flag_scientific_name"]=true
+      }
+
       Object.entries(data).forEach(([id, value]) => {
-        // Non IPNI Fillings
-        if(id=="scientific_name"){
-          value=getValue("scientific_name")
-        }
         if(id=="country_name"){
           value=value.replace(/\[.*?\]/g, '');
           country_code=false
           if(value.toLowerCase()=="united states" || value.toLowerCase()=="united states of america"){
             value="USA"
-          }
-          existing_country_id=getCountryId()
-          if(existing_country_id=="115" && value.toLowerCase()!="india"){
-            value="unknown"
           }
           countryToId(value).then(id=>{
             country_code=id
@@ -276,6 +229,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         setValue(id,value)
       });
+
+      if(data["family"].toLowerCase()!="no family" && data["family"].toLowerCase()!="" && data["genus"].toLowerCase()!="no genus" && data["genus"].toLowerCase()!="" &&  data["species"].toLowerCase()!="no species" &&  data["species"].toLowerCase()!=""){
+        status="Confirm"
+      }
+
     }
 
     // Case 4 - If IPNI verified
@@ -288,7 +246,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         data["species"]="sp."
       }
 
-      if(data["family"]=="No Family"){
+      if(data["family"]=="No Family" || data["family"]==""){
           if(data["scientific_name"]!="" && (data["genus"]!="No Genus" || data["species"]!="No Species")){
               status="Send to Taxonimist"
               if(DEBUG) alert("Send to taxonomist - Line 226")
@@ -423,7 +381,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           setValue(id,value)
         });
       setTimeout(() => {
-        const submitBtn = document.getElementById("acceptBtn");
+        const submitBtn = document.getElementById("submitBtn");
         if (!submitBtn) {
           alert("Button does not exists")
           return;
@@ -568,7 +526,16 @@ function setValue(id, value) {
     el.checked = value === 1 || value === true;
     let chec = el.getAttribute("name")
     console.log({ key: chec, val: value })
-
+  }
+  if (el.type === "radio") {
+    const target = document.querySelector(
+      `input[name="${el.name}"][value="${value}"]`
+    );
+    if (target) {
+      target.checked = true;
+      target.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    return;                                // ← add return so it doesn't fall through
   }
   else if (el.tagName === "SELECT") {
     console.log(el.tagName)
