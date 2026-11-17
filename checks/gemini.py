@@ -178,7 +178,7 @@ def write_prompt():
 "altitude":"",
 "locality":""
 }
-```, your response should not contain any assumed values, for collection_year only write the values available in the sheet - no need to assume the full year if it is not available in the image, should only fill the values present in the image, else leave it blank. Must fill `country_name` if `state` is available. Only respond in json without any description and narration."""
+```, your response should not contain any assumed values, for collection_year only write the values available in the sheet - no need to assume the full year if it is not available in the image, should only fill the values present in the image, else leave it blank. Must fill `country_name` if `state` is available. Only respond in copiable json code without any description and narration."""
 
     pyperclip.copy(prompt)
     time.sleep(0.5)
