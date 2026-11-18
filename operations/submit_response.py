@@ -2,7 +2,7 @@ import pyautogui as pilot
 import time
 from credentials import prompt
 from utils.executor import load_and_click, is_element_present, wait_for_first_image
-from utils.operator import click_element
+from utils.operator import click_element, double_click_element
 import worker
 def handle_extension():
     # Switch to annotation tab
@@ -55,7 +55,7 @@ def handle_extension():
                 time.sleep(0.5)
                 pilot.hotkey("ctrl","v")
                 time.sleep(0.5)
-                load_and_click("images/bsi/extension_fill.png",confidence=0.8)
+                click_element("images/bsi/extension_fill.png",confidence=0.8)
                 #load_and_click("images/bsi/extension_save.png",confidence=0.8)
                 time.sleep(0.5)
 
