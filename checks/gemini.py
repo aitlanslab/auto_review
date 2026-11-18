@@ -166,7 +166,7 @@ def write_prompt():
 "family":"",
 "genus":"",
 "species":"",
-"scientific_name":"",
+"plant_scientific_name":"",
 "author_name":"",
 "collector_name":"",
 "collection_number":"",
