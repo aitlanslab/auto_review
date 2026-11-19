@@ -395,8 +395,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         
       }, 300);
     }else if(status=="Reject"){
+              data["flag_family"]=true
+        data["flag_genus"]=false
+        data["flag_species"]=false
+        data["flag_scientific_name"]=false
+        data["flag_author_name"]=false
+        Object.entries(data).forEach(([id, value]) => {
+          setValue(id,value)
+        });
       setTimeout(() => {
-        const submitBtn = document.getElementById("flagToBsiBtn");
+        const submitBtn = document.getElementById("submitBtn");
         if (!submitBtn) {
           alert("Button does not exists")
           return;
@@ -408,9 +416,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
        
       }, 300);
     }else if(status=="Send to Taxonimist"){
+              data["flag_family"]=true
+        data["flag_genus"]=false
+        data["flag_species"]=false
+        data["flag_scientific_name"]=false
+        data["flag_author_name"]=false
+        Object.entries(data).forEach(([id, value]) => {
+          setValue(id,value)
+        });
       setTimeout(() => {
 
-        const submitBtn = document.getElementById("flagToTaxonomistBtn");
+        const submitBtn = document.getElementById("submitBtn");
         if (!submitBtn) {
           alert("Button does not exists")
           return;
