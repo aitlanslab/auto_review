@@ -131,6 +131,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     status="Validate with IPNI"
 
+    if(data["family"]=="No Family" && data["genus"]=="No Genus" && data["species"]=="sp."){
+      status="Confirm"
+    }
+
+
 
     old_genus=getValue("genus")
     new_genus=data["genus_name"] || ""
@@ -233,6 +238,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if(data["family"].toLowerCase()!="no family" && data["family"].toLowerCase()!="" && data["genus"].toLowerCase()!="no genus" && data["genus"].toLowerCase()!="" &&  data["species"].toLowerCase()!="no species" &&  data["species"].toLowerCase()!=""){
         status="Confirm"
       }
+
+
 
     }
 
@@ -372,11 +379,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if(status=="Confirm"){
+      if(data["family"]=="No Family"){
+        data["flag_family"]=true
+      }else{
         data["flag_family"]=false
         data["flag_genus"]=false
         data["flag_species"]=false
         data["flag_scientific_name"]=false
         data["flag_author_name"]=false
+      }
+        
         Object.entries(data).forEach(([id, value]) => {
           setValue(id,value)
         });
@@ -387,8 +399,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         if(AUTOSUBMIT){
-           submitBtn.click(); 
-           //alert(status)
+           //submitBtn.click(); 
+           alert(status)
           }else{
           alert("Confirming")
         }
@@ -410,8 +422,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
        if(AUTOSUBMIT){ 
-        submitBtn.click(); 
-        //alert(status)
+        //submitBtn.click(); 
+        alert(status)
        }else{ alert(status) }
        
       }, 300);
@@ -432,8 +444,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         if(AUTOSUBMIT){ 
-          submitBtn.click();
-          //alert("Taxonomist")
+          //submitBtn.click();
+          alert(status)
          }else{alert("Send to Taxonomist") }
         
       }, 300);
