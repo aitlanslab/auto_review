@@ -399,8 +399,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         if(AUTOSUBMIT){
-           //submitBtn.click(); 
-           alert(status)
+           submitBtn.click(); 
+           //alert(status)
           }else{
           alert("Confirming")
         }
@@ -422,8 +422,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
        if(AUTOSUBMIT){ 
-        //submitBtn.click(); 
-        alert(status)
+        submitBtn.click(); 
+        //alert(status)
        }else{ alert(status) }
        
       }, 300);
@@ -444,8 +444,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         if(AUTOSUBMIT){ 
-          //submitBtn.click();
-          alert(status)
+          submitBtn.click();
+          //alert(status)
          }else{alert("Send to Taxonomist") }
         
       }, 300);
